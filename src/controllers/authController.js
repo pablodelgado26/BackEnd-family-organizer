@@ -18,11 +18,16 @@ class AuthController {
     //Registrar um novo usuário
     async register(req, res) {
         try {
-            const { name, email, password } = req.body;
+            const { name, email, password, gender } = req.body;
 
             // Validação básica
             if (!name || !email || !password) {
-                return res.status(400).json({ error: "Os campos nome, email ou senha são obrigatórios" });
+                return res.status(400).json({ error: "Os campos nome, email e senha são obrigatórios" });
+            }
+
+            // Validação do gênero (opcional)
+            if (gender && !['masculino', 'feminino', 'outro'].includes(gender)) {
+                return res.status(400).json({ error: "Gênero deve ser: masculino, feminino ou outro" });
             }
 
             //Verificar se o usuário ja existe 
@@ -40,14 +45,18 @@ class AuthController {
                 name,
                 email,
                 password: hashedPassword,
+                gender: gender || null,
             };
 
             //Criar usuário 
             const user = await UserModel.create(data);
 
+            // Remove a senha do retorno
+            const { password: userPassword, ...userWithoutPassword } = user;
+
             return res.status(201).json({
                 message: "Usuário criado com sucesso!",
-                user,
+                user: userWithoutPassword,
             });
         } catch (error) {
             console.error("Erro ao criar novo usuario: ", error)

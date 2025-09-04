@@ -1,920 +1,556 @@
-# Tutorial: Criando um Backend Node.js para Gerenciamento de Animes
+# Sistema de Organização Familiar - Guia de Testes com Postman
 
-Este tutorial vai te guiar na criação de uma API REST para gerenciar uma coleção de animes, utilizando Node.js com Express. Vamos construir um CRUD completo seguindo uma arquitetura organizada com routes, controllers e models, usando um array em memória para armazenar os dados.
+Este guia mostra como testar completamente a API do sistema de organização familiar usando o Postman.
 
-## Capacidades Técnicas Trabalhadas
+## 🚀 Configuração Inicial
 
-- Utilizar paradigma da programação orientada a objetos
-- Definir os elementos de entrada, processamento e saída para a programação da aplicação web
-- Utilizar design patterns no desenvolvimento da aplicação web
-- Definir os frameworks a serem utilizados no desenvolvimento da aplicação web
-- Desenvolver API (web services) para integração de dados entre plataformas
+### Pré-requisitos
 
-## Pré-requisitos
+- Node.js (versão 18 ou superior)
+- npm ou yarn
 
-- Node.js instalado (versão 18 ou superior)
-- Um editor de código (VS Code recomendado)
-- Conhecimentos básicos de JavaScript e Node.js
 
-## Vamos começar!
+### Pré-requisitos
+- Node.js instalado
+- Postman instalado
+- Servidor rodando na porta 4000
 
-### Passo 1: Inicializar o projeto
-
-Crie uma pasta para o projeto e inicialize:
-
+### 1. Instalar e Iniciar o Servidor
 ```bash
-mkdir animes-api
-cd animes-api
-npm init
-```
-
-### Passo 2: Instalar dependências
-
-```bash
-npm install express nodemon dotenv
-```
-
-### Passo 3: Configurar o arquivo package.json
-
-Modifique o arquivo `package.json` para incluir os scripts:
-
-```json
-{
-  "name": "animes-api",
-  "version": "1.0.0",
-  "description": "Projeto base de uma API com MVC",
-  "keywords": ["nodejs", "javascript", "prisma"],
-  "license": "MIT",
-  "author": "Felipe Dev",
-  "type": "module",
-  "main": "src/server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/server.js"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^5.1.0",
-    "nodemon": "^3.1.9"
-  }
-}
-```
-
-### Passo 4: Criar o arquivo .gitignore
-
-Adicionar o seguinte conteúdo ao arquivo `.gitignore`:
-
-```
-node_modules
-.env
-```
-
-### Passo 5: Configurar o ambiente com dotenv
-
-Crie um arquivo `.env` na raiz do projeto:
-
-```
-PORT=4000
-```
-
-### Passo 6: Criar o servidor Express
-
-Crie o arquivo `src/server.js`:
-
-```javascript
-import express from "express";
-import { config } from "dotenv";
-
-config(); // Carrega variáveis de ambiente do arquivo .env
-const port = process.env.PORT || 3000;
-
-// Inicializa o Express
-const app = express();
-
-app.use(express.json()); // Parse de JSON
-
-// Rota base para verificar se o servidor está rodando
-app.get("/", (req, res) => {
-  res.json({ message: "API de Coleção de Animes funcionando!" });
-});
-
-// Iniciar o servidor
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
-});
-```
-
-### Passo 7: Criar o modelo Anime (usando array em memória)
-
-Crie o arquivo `src/models/animeModel.js`:
-
-```javascript
-// Array para armazenar os animes em memória
-let animes = [
-  {
-    id: 1,
-    title: "Attack on Titan",
-    description: "Humanidade lutando contra titãs em um mundo pós-apocalíptico",
-    episodes: 75,
-    releaseYear: 2013,
-    studio: "MAPPA",
-    genres: "Ação,Drama,Fantasia",
-    rating: 4.8,
-    imageUrl: "https://example.com/aot.jpg",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: 2,
-    title: "My Hero Academia",
-    description:
-      "Em um mundo onde quase todos possuem superpoderes, um garoto sem poderes luta para se tornar um herói",
-    episodes: 113,
-    releaseYear: 2016,
-    studio: "Bones",
-    genres: "Ação,Comédia,Super-heróis",
-    rating: 4.6,
-    imageUrl: "https://example.com/mha.jpg",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
-
-// Variável para controlar o próximo ID
-let nextId = 3;
-
-class AnimeModel {
-  // Obter todos os animes
-  findAll() {
-    return animes;
-  }
-
-  // Obter um anime pelo ID
-  findById(id) {
-    return animes.find((anime) => anime.id === Number(id)) || null;
-  }
-
-  // Criar um novo anime
-  create(
-    title,
-    description,
-    episodes,
-    releaseYear,
-    studio,
-    genres,
-    rating,
-    imageUrl
-  ) {
-    const newAnime = {
-      id: nextId++,
-      title,
-      description,
-      episodes,
-      releaseYear,
-      studio,
-      genres,
-      rating,
-      imageUrl,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    animes.push(newAnime);
-    return newAnime;
-  }
-
-  // Atualizar um anime
-  update(
-    id,
-    title,
-    description,
-    episodes,
-    releaseYear,
-    studio,
-    genres,
-    rating,
-    imageUrl
-  ) {
-    const anime = this.findById(id);
-
-    if (!anime) {
-      return null;
-    }
-
-    // Atualize o anime existente com os novos dados
-    anime.title = title || anime.title;
-    anime.description = description || anime.description;
-    anime.episodes = episodes || anime.episodes;
-    anime.releaseYear = releaseYear || anime.releaseYear;
-    anime.studio = studio || anime.studio;
-    anime.genres = genres || anime.genres;
-    anime.rating = rating || anime.rating;
-    anime.imageUrl = imageUrl || anime.imageUrl;
-    anime.updatedAt = new Date(); // Atualiza a data de modificação
-
-    return anime;
-  }
-
-  // Remover um anime
-  delete(id) {
-    const anime = this.findById(id);
-    if (!anime) {
-      return null;
-    }
-
-    // Filtra o anime a ser removido
-    animes = animes.filter((anime) => anime.id !== Number(id));
-
-    return true;
-  }
-}
-
-export default new AnimeModel();
-```
-
-### Passo 8: Criar o controlador de Animes
-
-Crie o arquivo `src/controllers/animeController.js`:
-
-```javascript
-import AnimeModel from "../models/animeModel.js";
-
-class AnimeController {
-  // GET /api/animes
-  getAllAnimes(req, res) {
-    try {
-      const animes = AnimeModel.findAll();
-      res.json(animes);
-    } catch (error) {
-      console.error("Erro ao buscar animes:", error);
-      res.status(500).json({ error: "Erro ao buscar animes" });
-    }
-  }
-
-  // GET /api/animes/:id
-  getAnimeById(req, res) {
-    try {
-      const { id } = req.params;
-
-      const anime = AnimeModel.findById(id);
-
-      if (!anime) {
-        return res.status(404).json({ error: "Anime não encontrado" });
-      }
-
-      res.json(anime);
-    } catch (error) {
-      console.error("Erro ao buscar anime:", error);
-      res.status(500).json({ error: "Erro ao buscar anime" });
-    }
-  }
-
-  // POST /api/animes
-  createAnime(req, res) {
-    try {
-      // Validação básica
-      const {
-        title,
-        description,
-        episodes,
-        releaseYear,
-        studio,
-        genres,
-        rating,
-        imageUrl,
-      } = req.body;
-
-      // Verifica se o título do anime foi fornecido
-      if (
-        !title ||
-        !description ||
-        !episodes ||
-        !releaseYear ||
-        !studio ||
-        !genres ||
-        !rating ||
-        !imageUrl
-      ) {
-        return res
-          .status(400)
-          .json({ error: "Todos os campos são obrigatórios" });
-      }
-
-      // Criar o novo anime
-      const newAnime = AnimeModel.create(
-        title,
-        description,
-        episodes,
-        releaseYear,
-        studio,
-        genres,
-        rating,
-        imageUrl
-      );
-
-      if (!newAnime) {
-        return res.status(400).json({ error: "Erro ao criar anime" });
-      }
-
-      res.status(201).json(newAnime);
-    } catch (error) {
-      console.error("Erro ao criar anime:", error);
-      res.status(500).json({ error: "Erro ao criar anime" });
-    }
-  }
-
-  // PUT /api/animes/:id
-  updateAnime(req, res) {
-    try {
-      const { id } = req.params;
-      const {
-        title,
-        description,
-        episodes,
-        releaseYear,
-        studio,
-        genres,
-        rating,
-        imageUrl,
-      } = req.body;
-
-      // Atualizar o anime
-      const updatedAnime = AnimeModel.update(
-        id,
-        title,
-        description,
-        episodes,
-        releaseYear,
-        studio,
-        genres,
-        rating,
-        imageUrl
-      );
-
-      if (!updatedAnime) {
-        return res.status(404).json({ error: "Anime não encontrado" });
-      }
-
-      res.json(updatedAnime);
-    } catch (error) {
-      console.error("Erro ao atualizar anime:", error);
-      res.status(500).json({ error: "Erro ao atualizar anime" });
-    }
-  }
-
-  // DELETE /api/animes/:id
-  deleteAnime(req, res) {
-    try {
-      const { id } = req.params;
-
-      // Remover o anime
-      const result = AnimeModel.delete(id);
-
-      if (!result) {
-        return res.status(404).json({ error: "Anime não encontrado" });
-      }
-
-      res.status(204).end(); // Resposta sem conteúdo
-    } catch (error) {
-      console.error("Erro ao remover anime:", error);
-      res.status(500).json({ error: "Erro ao remover anime" });
-    }
-  }
-}
-
-export default new AnimeController();
-```
-
-### Passo 9: Criar as rotas
-
-Crie o arquivo `src/routes/animeRoutes.js`:
-
-```javascript
-import express from "express";
-import AnimeController from "../controllers/animeController.js";
-
-const router = express.Router();
-
-// Rotas de Animes
-// GET /api/animes - Listar todos os animes
-router.get("/", AnimeController.getAllAnimes);
-
-// GET /api/animes/:id - Obter um anime pelo ID
-router.get("/:id", AnimeController.getAnimeById);
-
-// POST /api/animes - Criar um novo anime
-router.post("/", AnimeController.createAnime);
-
-// PUT /api/animes/:id - Atualizar um anime
-router.put("/:id", AnimeController.updateAnime);
-
-// DELETE /api/animes/:id - Remover um anime
-router.delete("/:id", AnimeController.deleteAnime);
-
-export default router;
-```
-
-### Passo 10: Iniciar o servidor
-
-```bash
+npm install
+npx prisma migrate dev
+npm run prisma:seed
 npm run dev
 ```
 
-## Testando a API
+### 2. Configurar Postman
+- Base URL: `http://localhost:4000`
+- Criar uma coleção chamada "Sistema Familiar"
+- Configurar variáveis de ambiente no Postman:
+  - `baseUrl`: `http://localhost:4000`
+  - `token`: (será preenchido após login)
 
-Agora você pode testar o CRUD completo usando ferramentas como Postman, Insomnia ou Thunder Client:
+## 🔐 Autenticação - Obtendo Token JWT
 
-### 1. Criar um anime (POST /api/animes)
+### 1. Fazer Login (POST)
+```
+URL: {{baseUrl}}/auth/login
+Method: POST
+Headers: Content-Type: application/json
 
+Body (raw JSON):
+{
+    "email": "maria@garcia.com",
+    "password": "123456"
+}
+```
+
+**Resposta esperada:**
 ```json
 {
-  "title": "Naruto Shippuden",
-  "description": "Naruto Uzumaki retorna após três anos de treinamento para enfrentar a Akatsuki",
-  "episodes": 500,
-  "releaseYear": 2007,
-  "studio": "Pierrot",
-  "genres": "Ação,Aventura,Comédia,Shounen",
-  "rating": 4.8,
-  "imageUrl": "https://example.com/naruto.jpg"
+    "message": "Login realizado com sucesso",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+        "id": 1,
+        "name": "Maria Garcia",
+        "email": "maria@garcia.com",
+        "gender": "F"
+    }
 }
 ```
 
-### 2. Listar todos os animes (GET /api/animes)
+**⚠️ IMPORTANTE:** Copie o token da resposta e adicione na variável `token` do Postman.
 
-### 3. Obter um anime específico (GET /api/animes/:id)
+### 2. Registrar Novo Usuário (POST)
+```
+URL: {{baseUrl}}/auth/register
+Method: POST
+Headers: Content-Type: application/json
 
-### 4. Atualizar um anime (PUT /api/animes/:id)
-
-```json
+Body (raw JSON):
 {
-  "episodes": 502,
-  "rating": 4.9
+    "name": "Novo Usuario",
+    "email": "novo@email.com", 
+    "password": "123456",
+    "gender": "M"
 }
 ```
 
-### 5. Remover um anime (DELETE /api/animes/:id)
+## 👨‍👩‍👧‍👦 Grupos Familiares
 
-## Explicação do Projeto
-
-Neste projeto, seguimos algumas boas práticas de desenvolvimento:
-
-1. **Arquitetura MVC (Model-View-Controller)**:
-
-   - Models: Encapsulam a lógica de acesso aos dados (em memória nesse caso)
-   - Controllers: Gerenciam a lógica de negócios
-   - (Sem Views, pois é uma API)
-
-2. **Organização de código**:
-
-   - Estrutura de pastas bem definida
-   - Separação de responsabilidades
-   - Código modular e reutilizável
-
-3. **Armazenamento em memória**:
-
-   - Utilização de arrays para armazenar dados temporários
-   - Gestão de IDs para garantir unicidade
-   - Simulação de operações assíncronas (async/await) para facilitar expansão futura
-
-4. **Tratamento de erros**:
-
-   - Try/catch blocks para lidar com exceções
-   - Respostas de erro padronizadas
-
-5. **Validação de dados**:
-   - Validação básica implementada nos controllers
-   - Pode ser aprimorada com bibliotecas como Joi ou Zod
-
-## Adaptando o Projeto para Usar o Prisma ORM
-
-Vamos transformar nosso projeto para utilizar o Prisma ORM para persistência de dados em um banco de dados real, ao invés de usar o armazenamento em memória.
-
-### Passo 1: Instalar o Prisma
-
-```bash
-# Instalar o Prisma CLI e o cliente Prisma
-npm install prisma @prisma/client
+### 3. Listar Meus Grupos (GET)
+```
+URL: {{baseUrl}}/family-groups
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
 ```
 
-### Passo 2: Inicializar o Prisma
-
-```bash
-npx prisma init
+### 4. Criar Novo Grupo (POST)
 ```
+URL: {{baseUrl}}/family-groups
+Method: POST
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
 
-Este comando cria:
-
-- Uma pasta `prisma` com um arquivo `schema.prisma`
-- Um arquivo `.env` para configuração da conexão com o banco de dados
-
-### Passo 3: Configurar o banco de dados
-
-Edite o arquivo `.env` para adicionar a URL de conexão com o banco de dados:
-
-```env
-PORT=4000
-
-# Para SQLite
-DATABASE_URL="file:./dev.db"
-
-# Ou Para PostgreSQL
-# DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/animes?schema=public"
-```
-
-Neste exemplo, estamos usando SQLite para facilitar o desenvolvimento, mas em um ambiente de produção, você provavelmente usaria PostgreSQL, MySQL ou MongoDB.
-
-### Passo 4: Definir o modelo no Prisma
-
-Edite o arquivo `prisma/schema.prisma`:
-
-```prisma
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
-
-model Anime {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  episodes    Int
-  releaseYear Int
-  studio      String
-  genres      String
-  rating      Float
-  imageUrl    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+Body (raw JSON):
+{
+    "name": "Família Teste",
+    "description": "Grupo criado para testes"
 }
 ```
 
-### Passo 5: Criar a instância do cliente Prisma
-
-Crie o arquivo `prisma/prisma.js`:
-
-```javascript
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
-export default prisma;
+### 5. Entrar em Grupo com Código (POST)
 ```
+URL: {{baseUrl}}/family-groups/join
+Method: POST
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
 
-### Passo 6: Executar a migração do banco de dados
-
-```bash
-npx prisma migrate dev
-```
-
-### Passo 7: Adaptar o modelo Anime
-
-Substitua o código do arquivo `src/models/animeModel.js` pelo seguinte:
-
-```javascript
-import prisma from "../../prisma/prisma.js";
-
-class AnimeModel {
-  // Obter todos os animes
-  async findAll() {
-    const animes = await prisma.anime.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    console.log(animes);
-
-    return animes;
-  }
-
-  // Obter um anime pelo ID
-  async findById(id) {
-    const anime = await prisma.anime.findUnique({
-      where: {
-        id: Number(id),
-      },
-    });
-
-    return anime;
-  }
-
-  // Criar um novo anime
-  async create(
-    title,
-    description,
-    episodes,
-    releaseYear,
-    studio,
-    genres,
-    rating,
-    imageUrl
-  ) {
-    const newAnime = await prisma.anime.create({
-      data: {
-        title,
-        description,
-        episodes,
-        releaseYear,
-        studio,
-        genres,
-        rating,
-        imageUrl,
-      },
-    });
-
-    return newAnime;
-  }
-
-  // Atualizar um anime
-  async update(
-    id,
-    title,
-    description,
-    episodes,
-    releaseYear,
-    studio,
-    genres,
-    rating,
-    imageUrl
-  ) {
-    const anime = await this.findById(id);
-
-    if (!anime) {
-      return null;
-    }
-
-    // Atualize o anime existente com os novos dados
-    const data = {};
-    if (title !== undefined) {
-      data.title = title;
-    }
-    if (description !== undefined) {
-      data.description = description;
-    }
-    if (episodes !== undefined) {
-      data.episodes = episodes;
-    }
-    if (releaseYear !== undefined) {
-      data.releaseYear = releaseYear;
-    }
-    if (studio !== undefined) {
-      data.studio = studio;
-    }
-    if (genres !== undefined) {
-      data.genres = genres;
-    }
-    if (rating !== undefined) {
-      data.rating = rating;
-    }
-    if (imageUrl !== undefined) {
-      data.imageUrl = imageUrl;
-    }
-
-    const animeUpdated = await prisma.anime.update({
-      where: {
-        id: Number(id),
-      },
-      data,
-    });
-
-    return animeUpdated;
-  }
-
-  // Remover um anime
-  async delete(id) {
-    const anime = await this.findById(id);
-
-    if (!anime) {
-      return null;
-    }
-
-    await prisma.anime.delete({
-      where: {
-        id: Number(id),
-      },
-    });
-
-    return true;
-  }
+Body (raw JSON):
+{
+    "inviteCode": "GARCIA01"
 }
-
-export default new AnimeModel();
 ```
 
-### Passo 8: Adaptar o controller para trabalhar com operações assíncronas
+### 6. Ver Detalhes do Grupo (GET)
+```
+URL: {{baseUrl}}/family-groups/1
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
 
-Modifique o arquivo `src/controllers/animeController.js` para trabalhar com as operações assíncronas do Prisma:
+### 7. Gerar Novo Código de Convite (PUT)
+```
+URL: {{baseUrl}}/family-groups/1/regenerate-invite
+Method: PUT
+Headers: 
+  - Authorization: Bearer {{token}}
+```
 
-```javascript
-import AnimeModel from "../models/animeModel.js";
+## 🏥 Consultas Médicas
 
-class AnimeController {
-  // GET /api/animes
-  async getAllAnimes(req, res) {
-    try {
-      const animes = await AnimeModel.findAll();
-      res.json(animes);
-    } catch (error) {
-      console.error("Erro ao buscar animes:", error);
-      res.status(500).json({ error: "Erro ao buscar animes" });
-    }
-  }
+### 8. Listar Consultas do Grupo (GET)
+```
+URL: {{baseUrl}}/appointments/group/1
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
 
-  // GET /api/animes/:id
-  async getAnimeById(req, res) {
-    try {
-      const { id } = req.params;
+### 9. Criar Nova Consulta (POST)
+```
+URL: {{baseUrl}}/appointments
+Method: POST
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
 
-      const anime = await AnimeModel.findById(id);
-
-      if (!anime) {
-        return res.status(404).json({ error: "Anime não encontrado" });
-      }
-
-      res.json(anime);
-    } catch (error) {
-      console.error("Erro ao buscar anime:", error);
-      res.status(500).json({ error: "Erro ao buscar anime" });
-    }
-  }
-
-  // POST /api/animes
-  async createAnime(req, res) {
-    try {
-      // Validação básica
-      const {
-        title,
-        description,
-        episodes,
-        releaseYear,
-        studio,
-        genres,
-        rating,
-        imageUrl,
-      } = req.body;
-
-      // Verifica se o título do anime foi fornecido
-      if (
-        !title ||
-        !description ||
-        !episodes ||
-        !releaseYear ||
-        !studio ||
-        !genres ||
-        !rating ||
-        !imageUrl
-      ) {
-        return res
-          .status(400)
-          .json({ error: "Todos os campos são obrigatórios" });
-      }
-
-      // Criar o novo anime
-      const newAnime = await AnimeModel.create(
-        title,
-        description,
-        episodes,
-        releaseYear,
-        studio,
-        genres,
-        rating,
-        imageUrl
-      );
-
-      if (!newAnime) {
-        return res.status(400).json({ error: "Erro ao criar anime" });
-      }
-
-      res.status(201).json(newAnime);
-    } catch (error) {
-      console.error("Erro ao criar anime:", error);
-      res.status(500).json({ error: "Erro ao criar anime" });
-    }
-  }
-
-  // PUT /api/animes/:id
-  async updateAnime(req, res) {
-    try {
-      const { id } = req.params;
-      const {
-        title,
-        description,
-        episodes,
-        releaseYear,
-        studio,
-        genres,
-        rating,
-        imageUrl,
-      } = req.body;
-
-      // Atualizar o anime
-      const updatedAnime = await AnimeModel.update(
-        id,
-        title,
-        description,
-        episodes,
-        releaseYear,
-        studio,
-        genres,
-        rating,
-        imageUrl
-      );
-
-      if (!updatedAnime) {
-        return res.status(404).json({ error: "Anime não encontrado" });
-      }
-
-      res.json(updatedAnime);
-    } catch (error) {
-      console.error("Erro ao atualizar anime:", error);
-      res.status(500).json({ error: "Erro ao atualizar anime" });
-    }
-  }
-
-  // DELETE /api/animes/:id
-  async deleteAnime(req, res) {
-    try {
-      const { id } = req.params;
-
-      // Remover o anime
-      const result = await AnimeModel.delete(id);
-
-      if (!result) {
-        return res.status(404).json({ error: "Anime não encontrado" });
-      }
-
-      res.status(204).end(); // Resposta sem conteúdo
-    } catch (error) {
-      console.error("Erro ao remover anime:", error);
-      res.status(500).json({ error: "Erro ao remover anime" });
-    }
-  }
+Body (raw JSON):
+{
+    "title": "Consulta Cardiologista",
+    "doctor": "Dr. João Silva",
+    "location": "Hospital São Lucas - Sala 205",
+    "date": "2025-09-20",
+    "time": "09:00",
+    "description": "Consulta de rotina anual",
+    "familyGroupId": 1
 }
-
-export default new AnimeController();
 ```
 
-### Passo 9: Atualizar o servidor para usar as rotas
-
-Atualize o arquivo `src/server.js`:
-
-```javascript
-import express from "express";
-import { config } from "dotenv";
-import animeRoutes from "./routes/animeRoutes.js";
-
-config(); // Carrega variáveis de ambiente do arquivo .env
-const port = process.env.PORT || 3000;
-
-// Inicializa o Express
-const app = express();
-
-app.use(express.json()); // Parse de JSON
-
-// Rota base para verificar se o servidor está rodando
-app.get("/", (req, res) => {
-  res.json({ message: "API de Coleção de Animes funcionando!" });
-});
-
-// Usar as rotas de animes
-app.use("/animes", animeRoutes);
-
-// Tratamento para encerrar o servidor e fechar conexões corretamente
-const server = app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
-});
+### 10. Próximas Consultas (GET)
+```
+URL: {{baseUrl}}/appointments/group/1/upcoming
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
 ```
 
-## Vantagens de Usar o Prisma ORM
+### 11. Consultas por Data (GET)
+```
+URL: {{baseUrl}}/appointments/group/1/date?date=2025-09-20
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
 
-A principal diferença entre o projeto original e este com Prisma é:
+### 12. Consultas por Médico (GET)
+```
+URL: {{baseUrl}}/appointments/group/1/doctor?doctor=Dr. João Silva
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
 
-1. **Persistência de dados**: Os dados não são mais perdidos quando o servidor é reiniciado
-2. **Operações assíncronas reais**: As operações de banco de dados são assíncronas por natureza
-3. **Segurança e validação**: O Prisma ajuda a prevenir injeção de SQL e validar tipos de dados
-4. **Escalabilidade**: O projeto pode agora ser escalado para múltiplas instâncias do servidor
-5. **Migrations**: O Prisma gerencia as alterações no schema do banco de dados
+### 13. Atualizar Consulta (PUT)
+```
+URL: {{baseUrl}}/appointments/1
+Method: PUT
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
 
-## Próximos Passos
+Body (raw JSON):
+{
+    "time": "10:30",
+    "description": "Consulta reagendada"
+}
+```
 
-Algumas melhorias que você pode adicionar ao projeto:
+### 14. Excluir Consulta (DELETE)
+```
+URL: {{baseUrl}}/appointments/1
+Method: DELETE
+Headers: 
+  - Authorization: Bearer {{token}}
+```
 
-1. **Relações entre modelos**: Adicionar modelos relacionados como Gêneros, Estúdios, etc.
-2. **Autenticação e autorização**: Implementar JWT para proteger as rotas
-3. **Paginação e filtros**: Melhorar a rota de listagem com opções de paginação e filtros
-4. **Validação avançada**: Usar bibliotecas como Joi ou Zod para validação mais robusta
-5. **Testes automatizados**: Adicionar testes unitários e de integração
-6. **Logging**: Implementar um sistema de log mais robusto
-7. **Documentação da API**: Adicionar Swagger ou similar para documentar a API
+## 🎉 Eventos Familiares
 
-Agora você tem uma API REST completa com persistência de dados usando Node.js, Express e Prisma ORM!
+### 15. Listar Eventos do Grupo (GET)
+```
+URL: {{baseUrl}}/events/group/1
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 16. Criar Novo Evento (POST)
+```
+URL: {{baseUrl}}/events
+Method: POST
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
+
+Body (raw JSON):
+{
+    "title": "Aniversário da Maria",
+    "description": "Festa de 30 anos",
+    "date": "2025-12-15",
+    "time": "19:00",
+    "location": "Casa da família",
+    "type": "BIRTHDAY",
+    "familyGroupId": 1
+}
+```
+
+### 17. Próximos Eventos (GET)
+```
+URL: {{baseUrl}}/events/group/1/upcoming
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 18. Aniversários do Mês (GET)
+```
+URL: {{baseUrl}}/events/group/1/birthdays
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 19. Eventos por Tipo (GET)
+```
+URL: {{baseUrl}}/events/group/1/type?type=BIRTHDAY
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+**Tipos disponíveis:** BIRTHDAY, MEETING, TRIP, CELEBRATION, OTHER
+
+## 📝 Anotações/Recados
+
+### 20. Listar Anotações do Grupo (GET)
+```
+URL: {{baseUrl}}/notes/group/1
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 21. Criar Nova Anotação (POST)
+```
+URL: {{baseUrl}}/notes
+Method: POST
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
+
+Body (raw JSON):
+{
+    "title": "Comprar remédio",
+    "content": "Não esquecer de comprar o remédio da pressão do vovô",
+    "priority": "HIGH",
+    "familyGroupId": 1
+}
+```
+
+### 22. Anotações por Prioridade (GET)
+```
+URL: {{baseUrl}}/notes/group/1/priority?priority=HIGH
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+**Prioridades disponíveis:** LOW, NORMAL, HIGH
+
+### 23. Buscar Anotações (GET)
+```
+URL: {{baseUrl}}/notes/group/1/search?q=remédio
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 24. Anotações de Alta Prioridade (GET)
+```
+URL: {{baseUrl}}/notes/group/1/high-priority
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+## 📍 Lugares Importantes
+
+### 25. Listar Lugares do Grupo (GET)
+```
+URL: {{baseUrl}}/places/group/1
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 26. Criar Novo Lugar (POST)
+```
+URL: {{baseUrl}}/places
+Method: POST
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
+
+Body (raw JSON):
+{
+    "name": "Hospital Santa Casa",
+    "address": "Rua das Flores, 123",
+    "type": "HOSPITAL",
+    "phone": "(11) 1234-5678",
+    "notes": "Hospital de emergência mais próximo",
+    "familyGroupId": 1
+}
+```
+
+### 27. Lugares por Tipo (GET)
+```
+URL: {{baseUrl}}/places/group/1/type?type=HOSPITAL
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+**Tipos disponíveis:** HOSPITAL, SCHOOL, MARKET, PHARMACY, RESTAURANT, OTHER
+
+### 28. Buscar Lugares (GET)
+```
+URL: {{baseUrl}}/places/group/1/search?q=hospital
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 29. Tipos Disponíveis (GET)
+```
+URL: {{baseUrl}}/places/group/1/types
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+## 📸 Álbuns de Fotos
+
+### 30. Listar Álbuns do Grupo (GET)
+```
+URL: {{baseUrl}}/albums/group/1
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 31. Criar Novo Álbum (POST)
+```
+URL: {{baseUrl}}/albums
+Method: POST
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
+
+Body (raw JSON):
+{
+    "title": "Viagem à Praia 2025",
+    "description": "Fotos da viagem de férias em família",
+    "familyGroupId": 1
+}
+```
+
+### 32. Álbuns Recentes (GET)
+```
+URL: {{baseUrl}}/albums/group/1/recent
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 33. Buscar Álbuns (GET)
+```
+URL: {{baseUrl}}/albums/group/1/search?q=viagem
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+## 🖼️ Fotos
+
+### 34. Listar Fotos do Grupo (GET)
+```
+URL: {{baseUrl}}/photos/group/1
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 35. Criar Nova Foto (POST)
+```
+URL: {{baseUrl}}/photos
+Method: POST
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
+
+Body (raw JSON):
+{
+    "title": "Pôr do sol na praia",
+    "description": "Linda vista durante o passeio",
+    "imageUrl": "https://example.com/foto.jpg",
+    "familyGroupId": 1,
+    "albumId": 1
+}
+```
+
+### 36. Fotos do Álbum (GET)
+```
+URL: {{baseUrl}}/photos/album/1
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 37. Fotos sem Álbum (GET)
+```
+URL: {{baseUrl}}/photos/group/1/without-album
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 38. Mover Foto para Álbum (PUT)
+```
+URL: {{baseUrl}}/photos/1/move
+Method: PUT
+Headers: 
+  - Authorization: Bearer {{token}}
+  - Content-Type: application/json
+
+Body (raw JSON):
+{
+    "albumId": 2
+}
+```
+
+### 39. Fotos Recentes (GET)
+```
+URL: {{baseUrl}}/photos/group/1/recent
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+## 📊 Dashboard
+
+### 40. Resumo do Dashboard (GET)
+```
+URL: {{baseUrl}}/dashboard/group/1
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 41. Agenda de Hoje (GET)
+```
+URL: {{baseUrl}}/dashboard/group/1/today
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+### 42. Estatísticas do Grupo (GET)
+```
+URL: {{baseUrl}}/dashboard/group/1/stats
+Method: GET
+Headers: 
+  - Authorization: Bearer {{token}}
+```
+
+## 🎯 Sequência de Testes Recomendada
+
+### Fluxo Completo de Teste:
+
+1. **Autenticação**: Login → Copiar token
+2. **Grupos**: Listar grupos → Ver detalhes do grupo 1
+3. **Consultas**: Criar consulta → Listar consultas → Próximas consultas
+4. **Eventos**: Criar evento → Listar eventos → Aniversários
+5. **Anotações**: Criar anotação → Listar → Buscar por prioridade
+6. **Lugares**: Criar lugar → Listar → Buscar por tipo
+7. **Álbuns**: Criar álbum → Listar álbuns
+8. **Fotos**: Criar foto → Associar ao álbum → Listar fotos
+9. **Dashboard**: Ver resumo → Agenda de hoje → Estatísticas
+
+## 🔑 Contas de Teste Disponíveis
+
+| Email | Senha | Grupo | Papel |
+|-------|-------|-------|-------|
+| maria@garcia.com | 123456 | Família Garcia | Admin |
+| joao@garcia.com | 123456 | Família Garcia | Membro |
+| ana@garcia.com | 123456 | Família Garcia | Membro |
+| pedro@silva.com | 123456 | Família Silva | Admin |
+
+**Códigos de Convite:**
+- Família Garcia: `GARCIA01`
+- Família Silva: `SILVA01`
+
+## 🚫 Códigos de Erro Comuns
+
+- **401 Unauthorized**: Token inválido ou ausente
+- **403 Forbidden**: Sem permissão para acessar recurso
+- **404 Not Found**: Recurso não encontrado
+- **400 Bad Request**: Dados inválidos no body da request
+
+## 💡 Dicas para Usar no Postman
+
+1. **Crie variáveis de ambiente** para `baseUrl` e `token`
+2. **Organize requests em pastas** por funcionalidade
+3. **Use Scripts de Pre-request** para automatizar tokens
+4. **Salve respostas como exemplos** para documentação
+5. **Use Tests** para validar respostas automaticamente
+
+---
+
+🎉 **Agora você pode testar completamente a API usando o Postman!**
 
 ```
 

@@ -13,6 +13,19 @@ class UserModel {
         const user = await prisma.user.findUnique({
             where: {
                 id: Number(id)
+            },
+            include: {
+                familyGroups: {
+                    include: {
+                        familyGroup: {
+                            select: {
+                                id: true,
+                                name: true,
+                                inviteCode: true
+                            }
+                        }
+                    }
+                }
             }
         });
 

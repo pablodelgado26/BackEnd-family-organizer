@@ -1,482 +1,354 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Iniciando o seed...");
+  console.log('🌱 Iniciando o seed do banco de dados...');
 
-  // Criar coleções de diferentes temáticas
-  const nbaLegends = await prisma.collection.create({
-    data: {
-      name: "NBA Legends",
-      description: "Jogadores lendários da história do basquete da NBA",
-      releaseYear: 2023,
-    },
-  });
+  // Limpar dados existentes
+  await prisma.photo.deleteMany();
+  await prisma.album.deleteMany();
+  await prisma.place.deleteMany();
+  await prisma.note.deleteMany();
+  await prisma.event.deleteMany();
+  await prisma.appointment.deleteMany();
+  await prisma.familyGroupMember.deleteMany();
+  await prisma.familyGroup.deleteMany();
+  await prisma.user.deleteMany();
 
-  const rockBands = await prisma.collection.create({
-    data: {
-      name: "Classic Rock",
-      description: "Bandas clássicas do rock mundial",
-      releaseYear: 2022,
-    },
-  });
-
-  const worldMonuments = await prisma.collection.create({
-    data: {
-      name: "World Monuments",
-      description: "Monumentos históricos famosos ao redor do mundo",
-      releaseYear: 2021,
-    },
-  });
-
-  const dinosaurs = await prisma.collection.create({
-    data: {
-      name: "Prehistoric Giants",
-      description: "Dinossauros que habitaram a Terra há milhões de anos",
-      releaseYear: 2023,
-    },
-  });
-
-  const videogameConsoles = await prisma.collection.create({
-    data: {
-      name: "Gaming History",
-      description: "Consoles de videogame que marcaram gerações",
-      releaseYear: 2022,
-    },
-  });
-
-  console.log("Coleções criadas. Inserindo cards...");
-
-  // Cards para NBA Legends
-  const nbaCards = await Promise.all([
-    prisma.card.create({
+  // Criar usuários
+  const hashedPassword = await bcrypt.hash('123456', 10);
+  
+  const users = await Promise.all([
+    prisma.user.create({
       data: {
-        name: "Michael Jordan",
-        rarity: "Ultra Rare",
-        attackPoints: 9800,
-        defensePoints: 9200,
-        imageUrl: "https://example.com/jordan.jpg",
-        collectionId: nbaLegends.id,
-      },
+        name: 'Maria Garcia',
+        email: 'maria@garcia.com',
+        password: hashedPassword,
+        gender: 'feminino'
+      }
     }),
-    prisma.card.create({
+    prisma.user.create({
       data: {
-        name: "LeBron James",
-        rarity: "Ultra Rare",
-        attackPoints: 9700,
-        defensePoints: 9500,
-        imageUrl: "https://example.com/lebron.jpg",
-        collectionId: nbaLegends.id,
-      },
+        name: 'João Garcia',
+        email: 'joao@garcia.com',
+        password: hashedPassword,
+        gender: 'masculino'
+      }
     }),
-    prisma.card.create({
+    prisma.user.create({
       data: {
-        name: "Kobe Bryant",
-        rarity: "Ultra Rare",
-        attackPoints: 9600,
-        defensePoints: 9300,
-        imageUrl: "https://example.com/kobe.jpg",
-        collectionId: nbaLegends.id,
-      },
+        name: 'Ana Garcia',
+        email: 'ana@garcia.com',
+        password: hashedPassword,
+        gender: 'feminino'
+      }
     }),
-    prisma.card.create({
+    prisma.user.create({
       data: {
-        name: "Magic Johnson",
-        rarity: "Super Rare",
-        attackPoints: 9400,
-        defensePoints: 8700,
-        imageUrl: "https://example.com/magic.jpg",
-        collectionId: nbaLegends.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Larry Bird",
-        rarity: "Super Rare",
-        attackPoints: 9300,
-        defensePoints: 8800,
-        imageUrl: "https://example.com/bird.jpg",
-        collectionId: nbaLegends.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Shaquille O'Neal",
-        rarity: "Super Rare",
-        attackPoints: 9500,
-        defensePoints: 9400,
-        imageUrl: "https://example.com/shaq.jpg",
-        collectionId: nbaLegends.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Stephen Curry",
-        rarity: "Rare",
-        attackPoints: 9200,
-        defensePoints: 8500,
-        imageUrl: "https://example.com/curry.jpg",
-        collectionId: nbaLegends.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Kevin Durant",
-        rarity: "Rare",
-        attackPoints: 9300,
-        defensePoints: 8600,
-        imageUrl: "https://example.com/durant.jpg",
-        collectionId: nbaLegends.id,
-      },
-    }),
+        name: 'Pedro Silva',
+        email: 'pedro@silva.com',
+        password: hashedPassword,
+        gender: 'masculino'
+      }
+    })
   ]);
 
-  // Cards para Classic Rock
-  const rockCards = await Promise.all([
-    prisma.card.create({
+  console.log('✅ Usuários criados');
+
+  // Criar grupo familiar
+  const familyGroup = await prisma.familyGroup.create({
+    data: {
+      name: 'Família Garcia',
+      inviteCode: 'GARCIA01',
+      members: {
+        create: [
+          { userId: users[0].id, role: 'admin' }, // Maria é admin
+          { userId: users[1].id, role: 'member' }, // João é membro
+          { userId: users[2].id, role: 'member' }, // Ana é membro
+        ]
+      }
+    }
+  });
+
+  console.log('✅ Grupo familiar criado');
+
+  // Criar outro grupo familiar
+  const familyGroup2 = await prisma.familyGroup.create({
+    data: {
+      name: 'Família Silva',
+      inviteCode: 'SILVA01',
+      members: {
+        create: [
+          { userId: users[3].id, role: 'admin' } // Pedro é admin
+        ]
+      }
+    }
+  });
+
+  console.log('✅ Segundo grupo familiar criado');
+
+  // Criar consultas médicas
+  const appointments = await Promise.all([
+    prisma.appointment.create({
       data: {
-        name: "Queen",
-        rarity: "Ultra Rare",
-        attackPoints: 9600,
-        defensePoints: 9200,
-        imageUrl: "https://example.com/queen.jpg",
-        collectionId: rockBands.id,
-      },
+        title: 'Consulta Cardiologista - João',
+        doctor: 'Dr. Roberto Silva',
+        location: 'Hospital São Lucas - Sala 203',
+        date: new Date('2025-09-10'),
+        time: '14:30',
+        description: 'Consulta de rotina para acompanhamento cardíaco',
+        familyGroupId: familyGroup.id
+      }
     }),
-    prisma.card.create({
+    prisma.appointment.create({
       data: {
-        name: "Led Zeppelin",
-        rarity: "Ultra Rare",
-        attackPoints: 9700,
-        defensePoints: 9100,
-        imageUrl: "https://example.com/ledzeppelin.jpg",
-        collectionId: rockBands.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Pink Floyd",
-        rarity: "Ultra Rare",
-        attackPoints: 9500,
-        defensePoints: 9300,
-        imageUrl: "https://example.com/pinkfloyd.jpg",
-        collectionId: rockBands.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "The Beatles",
-        rarity: "Ultra Rare",
-        attackPoints: 9800,
-        defensePoints: 9400,
-        imageUrl: "https://example.com/beatles.jpg",
-        collectionId: rockBands.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "AC/DC",
-        rarity: "Super Rare",
-        attackPoints: 9300,
-        defensePoints: 8800,
-        imageUrl: "https://example.com/acdc.jpg",
-        collectionId: rockBands.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "The Rolling Stones",
-        rarity: "Super Rare",
-        attackPoints: 9400,
-        defensePoints: 9000,
-        imageUrl: "https://example.com/rollingstones.jpg",
-        collectionId: rockBands.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Guns N' Roses",
-        rarity: "Rare",
-        attackPoints: 9100,
-        defensePoints: 8700,
-        imageUrl: "https://example.com/gunsnroses.jpg",
-        collectionId: rockBands.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Metallica",
-        rarity: "Rare",
-        attackPoints: 9200,
-        defensePoints: 8900,
-        imageUrl: "https://example.com/metallica.jpg",
-        collectionId: rockBands.id,
-      },
-    }),
+        title: 'Consulta Pediatra - Ana',
+        doctor: 'Dra. Fernanda Costa',
+        location: 'Clínica Infantil - Consultório 5',
+        date: new Date('2025-09-08'),
+        time: '16:00',
+        description: 'Consulta de rotina',
+        familyGroupId: familyGroup.id
+      }
+    })
   ]);
 
-  // Cards para World Monuments
-  const monumentCards = await Promise.all([
-    prisma.card.create({
+  console.log('✅ Consultas criadas');
+
+  // Criar eventos
+  const events = await Promise.all([
+    prisma.event.create({
       data: {
-        name: "Eiffel Tower",
-        rarity: "Ultra Rare",
-        attackPoints: 8800,
-        defensePoints: 9500,
-        imageUrl: "https://example.com/eiffel.jpg",
-        collectionId: worldMonuments.id,
-      },
+        title: 'Aniversário da Maria',
+        description: 'Comemoração do aniversário da Maria com a família',
+        date: new Date('2025-09-15'),
+        time: '19:00',
+        location: 'Casa da família',
+        type: 'aniversario',
+        familyGroupId: familyGroup.id
+      }
     }),
-    prisma.card.create({
+    prisma.event.create({
       data: {
-        name: "Great Wall of China",
-        rarity: "Ultra Rare",
-        attackPoints: 8500,
-        defensePoints: 9800,
-        imageUrl: "https://example.com/greatwall.jpg",
-        collectionId: worldMonuments.id,
-      },
+        title: 'Reunião Escolar - Ana',
+        description: 'Reunião de pais na escola da Ana',
+        date: new Date('2025-09-12'),
+        time: '18:30',
+        location: 'Escola Municipal São José',
+        type: 'reuniao',
+        familyGroupId: familyGroup.id
+      }
     }),
-    prisma.card.create({
+    prisma.event.create({
       data: {
-        name: "Taj Mahal",
-        rarity: "Ultra Rare",
-        attackPoints: 8700,
-        defensePoints: 9600,
-        imageUrl: "https://example.com/tajmahal.jpg",
-        collectionId: worldMonuments.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Pyramids of Giza",
-        rarity: "Ultra Rare",
-        attackPoints: 8600,
-        defensePoints: 9900,
-        imageUrl: "https://example.com/pyramids.jpg",
-        collectionId: worldMonuments.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Colosseum",
-        rarity: "Super Rare",
-        attackPoints: 8400,
-        defensePoints: 9300,
-        imageUrl: "https://example.com/colosseum.jpg",
-        collectionId: worldMonuments.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Statue of Liberty",
-        rarity: "Super Rare",
-        attackPoints: 8300,
-        defensePoints: 9200,
-        imageUrl: "https://example.com/liberty.jpg",
-        collectionId: worldMonuments.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Stonehenge",
-        rarity: "Rare",
-        attackPoints: 8000,
-        defensePoints: 9400,
-        imageUrl: "https://example.com/stonehenge.jpg",
-        collectionId: worldMonuments.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Machu Picchu",
-        rarity: "Rare",
-        attackPoints: 8200,
-        defensePoints: 9100,
-        imageUrl: "https://example.com/machupicchu.jpg",
-        collectionId: worldMonuments.id,
-      },
-    }),
+        title: 'Viagem para a Praia',
+        description: 'Viagem de fim de semana para Florianópolis',
+        date: new Date('2025-09-20'),
+        time: '08:00',
+        location: 'Florianópolis - SC',
+        type: 'viagem',
+        familyGroupId: familyGroup.id
+      }
+    })
   ]);
 
-  // Cards para Prehistoric Giants
-  const dinosaurCards = await Promise.all([
-    prisma.card.create({
+  console.log('✅ Eventos criados');
+
+  // Criar anotações
+  const notes = await Promise.all([
+    prisma.note.create({
       data: {
-        name: "Tyrannosaurus Rex",
-        rarity: "Ultra Rare",
-        attackPoints: 9900,
-        defensePoints: 8800,
-        imageUrl: "https://example.com/trex.jpg",
-        collectionId: dinosaurs.id,
-      },
+        title: 'Lista de Compras',
+        content: 'Leite, Pão, Ovos, Frutas, Carne para o churrasco de domingo',
+        priority: 'normal',
+        familyGroupId: familyGroup.id
+      }
     }),
-    prisma.card.create({
+    prisma.note.create({
       data: {
-        name: "Velociraptor",
-        rarity: "Super Rare",
-        attackPoints: 9400,
-        defensePoints: 8300,
-        imageUrl: "https://example.com/velociraptor.jpg",
-        collectionId: dinosaurs.id,
-      },
+        title: 'URGENTE: Documentos Ana',
+        content: 'Levar RG e CPF da Ana para matrícula da escola nova até sexta-feira',
+        priority: 'alta',
+        familyGroupId: familyGroup.id
+      }
     }),
-    prisma.card.create({
+    prisma.note.create({
       data: {
-        name: "Brachiosaurus",
-        rarity: "Super Rare",
-        attackPoints: 8500,
-        defensePoints: 9700,
-        imageUrl: "https://example.com/brachiosaurus.jpg",
-        collectionId: dinosaurs.id,
-      },
+        title: 'Lembrete: Remédio João',
+        content: 'João precisa tomar o remédio para pressão todos os dias às 8h',
+        priority: 'alta',
+        familyGroupId: familyGroup.id
+      }
     }),
-    prisma.card.create({
+    prisma.note.create({
       data: {
-        name: "Triceratops",
-        rarity: "Super Rare",
-        attackPoints: 8700,
-        defensePoints: 9600,
-        imageUrl: "https://example.com/triceratops.jpg",
-        collectionId: dinosaurs.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Stegosaurus",
-        rarity: "Rare",
-        attackPoints: 8400,
-        defensePoints: 9500,
-        imageUrl: "https://example.com/stegosaurus.jpg",
-        collectionId: dinosaurs.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Spinosaurus",
-        rarity: "Ultra Rare",
-        attackPoints: 9800,
-        defensePoints: 8700,
-        imageUrl: "https://example.com/spinosaurus.jpg",
-        collectionId: dinosaurs.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Ankylosaurus",
-        rarity: "Rare",
-        attackPoints: 8200,
-        defensePoints: 9800,
-        imageUrl: "https://example.com/ankylosaurus.jpg",
-        collectionId: dinosaurs.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Pteranodon",
-        rarity: "Rare",
-        attackPoints: 9100,
-        defensePoints: 8000,
-        imageUrl: "https://example.com/pteranodon.jpg",
-        collectionId: dinosaurs.id,
-      },
-    }),
+        title: 'Ideias para Decoração',
+        content: 'Pesquisar ideias para decorar o quarto da Ana. Ela gosta de unicórnios e cores pastéis.',
+        priority: 'baixa',
+        familyGroupId: familyGroup.id
+      }
+    })
   ]);
 
-  // Cards para Gaming History
-  const consoleCards = await Promise.all([
-    prisma.card.create({
+  console.log('✅ Anotações criadas');
+
+  // Criar lugares importantes
+  const places = await Promise.all([
+    prisma.place.create({
       data: {
-        name: "Atari 2600",
-        rarity: "Ultra Rare",
-        attackPoints: 7500,
-        defensePoints: 8000,
-        imageUrl: "https://example.com/atari.jpg",
-        collectionId: videogameConsoles.id,
-      },
+        name: 'Hospital São Lucas',
+        address: 'Rua das Flores, 123 - Centro',
+        type: 'hospital',
+        phone: '(47) 3333-4444',
+        notes: 'Hospital onde fazemos consultas com o cardiologista',
+        familyGroupId: familyGroup.id
+      }
     }),
-    prisma.card.create({
+    prisma.place.create({
       data: {
-        name: "Nintendo NES",
-        rarity: "Ultra Rare",
-        attackPoints: 8200,
-        defensePoints: 8300,
-        imageUrl: "https://example.com/nes.jpg",
-        collectionId: videogameConsoles.id,
-      },
+        name: 'Escola Municipal São José',
+        address: 'Av. Educação, 456 - Bairro Escola',
+        type: 'escola',
+        phone: '(47) 3333-5555',
+        notes: 'Escola da Ana. Professora: Maria José',
+        familyGroupId: familyGroup.id
+      }
     }),
-    prisma.card.create({
+    prisma.place.create({
       data: {
-        name: "Sega Genesis",
-        rarity: "Super Rare",
-        attackPoints: 8100,
-        defensePoints: 8200,
-        imageUrl: "https://example.com/genesis.jpg",
-        collectionId: videogameConsoles.id,
-      },
+        name: 'Supermercado Central',
+        address: 'Rua do Comércio, 789 - Centro',
+        type: 'mercado',
+        phone: '(47) 3333-6666',
+        notes: 'Nosso mercado preferido. Têm desconto na terça-feira',
+        familyGroupId: familyGroup.id
+      }
     }),
-    prisma.card.create({
+    prisma.place.create({
       data: {
-        name: "Super Nintendo",
-        rarity: "Super Rare",
-        attackPoints: 8300,
-        defensePoints: 8400,
-        imageUrl: "https://example.com/snes.jpg",
-        collectionId: videogameConsoles.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "PlayStation 1",
-        rarity: "Rare",
-        attackPoints: 8400,
-        defensePoints: 8500,
-        imageUrl: "https://example.com/ps1.jpg",
-        collectionId: videogameConsoles.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Nintendo 64",
-        rarity: "Rare",
-        attackPoints: 8400,
-        defensePoints: 8300,
-        imageUrl: "https://example.com/n64.jpg",
-        collectionId: videogameConsoles.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "Xbox",
-        rarity: "Common",
-        attackPoints: 8600,
-        defensePoints: 8700,
-        imageUrl: "https://example.com/xbox.jpg",
-        collectionId: videogameConsoles.id,
-      },
-    }),
-    prisma.card.create({
-      data: {
-        name: "PlayStation 2",
-        rarity: "Common",
-        attackPoints: 8700,
-        defensePoints: 8800,
-        imageUrl: "https://example.com/ps2.jpg",
-        collectionId: videogameConsoles.id,
-      },
-    }),
+        name: 'Clínica Infantil Sorriso',
+        address: 'Rua da Saúde, 321 - Bairro Saúde',
+        type: 'hospital',
+        phone: '(47) 3333-7777',
+        notes: 'Clínica da pediatra da Ana',
+        familyGroupId: familyGroup.id
+      }
+    })
   ]);
 
-  console.log(
-    `Seed concluído! Criadas ${await prisma.collection.count()} coleções e ${await prisma.card.count()} cards.`
-  );
+  console.log('✅ Lugares criados');
+
+  // Criar álbuns de fotos
+  const albums = await Promise.all([
+    prisma.album.create({
+      data: {
+        name: 'Férias 2025',
+        description: 'Fotos das nossas férias de verão',
+        familyGroupId: familyGroup.id
+      }
+    }),
+    prisma.album.create({
+      data: {
+        name: 'Aniversários da Família',
+        description: 'Fotos de todos os aniversários familiares',
+        familyGroupId: familyGroup.id
+      }
+    }),
+    prisma.album.create({
+      data: {
+        name: 'Momentos Especiais',
+        description: 'Fotos de momentos especiais em família',
+        familyGroupId: familyGroup.id
+      }
+    })
+  ]);
+
+  console.log('✅ Álbuns criados');
+
+  // Criar fotos (algumas no álbum, outras soltas)
+  const photos = await Promise.all([
+    prisma.photo.create({
+      data: {
+        title: 'Praia de Copacabana',
+        url: 'https://example.com/foto1.jpg',
+        description: 'Família toda na praia durante as férias',
+        albumId: albums[0].id, // Férias 2025
+        familyGroupId: familyGroup.id
+      }
+    }),
+    prisma.photo.create({
+      data: {
+        title: 'Aniversário Maria 2024',
+        url: 'https://example.com/foto2.jpg',
+        description: 'Festa de aniversário da Maria',
+        albumId: albums[1].id, // Aniversários da Família
+        familyGroupId: familyGroup.id
+      }
+    }),
+    prisma.photo.create({
+      data: {
+        title: 'Primeiro dia de aula Ana',
+        url: 'https://example.com/foto3.jpg',
+        description: 'Ana no primeiro dia de aula na escola nova',
+        albumId: albums[2].id, // Momentos Especiais
+        familyGroupId: familyGroup.id
+      }
+    }),
+    prisma.photo.create({
+      data: {
+        title: 'Churrasco de Domingo',
+        url: 'https://example.com/foto4.jpg',
+        description: 'Churrasco em família no quintal de casa',
+        // Sem álbum (fica solta)
+        familyGroupId: familyGroup.id
+      }
+    }),
+    prisma.photo.create({
+      data: {
+        title: 'João no jardim',
+        url: 'https://example.com/foto5.jpg',
+        description: 'João cuidando das plantas do jardim',
+        // Sem álbum (fica solta)
+        familyGroupId: familyGroup.id
+      }
+    })
+  ]);
+
+  console.log('✅ Fotos criadas');
+
+  console.log(`
+🎉 Seed concluído com sucesso!
+
+📊 Dados criados:
+- ${users.length} usuários
+- 2 grupos familiares
+- ${appointments.length} consultas médicas
+- ${events.length} eventos
+- ${notes.length} anotações
+- ${places.length} lugares importantes
+- ${albums.length} álbuns de fotos
+- ${photos.length} fotos
+
+👤 Usuários de teste:
+- maria@garcia.com (senha: 123456) - Admin do grupo "Família Garcia"
+- joao@garcia.com (senha: 123456) - Membro do grupo "Família Garcia"
+- ana@garcia.com (senha: 123456) - Membro do grupo "Família Garcia"
+- pedro@silva.com (senha: 123456) - Admin do grupo "Família Silva"
+
+🏠 Grupos familiares:
+- Família Garcia (código: GARCIA01)
+- Família Silva (código: SILVA01)
+  `);
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
+  .then(async () => {
     await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error('❌ Erro durante o seed:', e);
+    await prisma.$disconnect();
+    process.exit(1);
   });
