@@ -1,124 +1,303 @@
-# 👨‍👩‍👧‍👦 Family Organizer - Backend API
+# 👨‍👩‍👧‍👦 Family Organizer - Backend API Completo
 
-API REST para gerenciamento de organização familiar, desenvolvida com Node.js, Express e Prisma.
+[![Prisma](https://img.shields.io/badge/Prisma-6.16.3-blueviolet.svg)](https://www.prisma.io/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+---
+
+## 📑 Índice
+
+- [Sobre o Projeto](#-sobre-o-projeto)
+- [Características Principais](#-características-principais)
+- [Tecnologias](#-tecnologias)
+- [Arquitetura](#-arquitetura)
+- [Instalação](#-instalação)
+- [Rotas da API](#-rotas-da-api)
+  - [Autenticação](#1-autenticação-auth)
+  - [Perfil de Usuário](#2-perfil-de-usuário-users)
+  - [Grupos Familiares](#3-grupos-familiares-family-groups)
+  - [Consultas Médicas](#4-consultas-médicas-appointments)
+  - [Eventos](#5-eventos-events)
+  - [Anotações](#6-anotações-notes)
+  - [Locais Importantes](#7-locais-importantes-places)
+  - [Álbuns](#8-álbuns-albums)
+  - [Fotos](#9-fotos-photos)
+  - [Dashboard](#10-dashboard-dashboard)
+- [Modelo de Dados](#-modelo-de-dados)
+- [Segurança](#-segurança)
+- [Códigos de Status HTTP](#-códigos-de-status-http)
+- [Exemplos de Uso](#-exemplos-de-uso)
+- [Scripts Disponíveis](#-scripts-disponíveis)
+- [Comandos Prisma Úteis](#-comandos-prisma-úteis)
+- [Observações Importantes](#-observações-importantes)
+- [Integração com Frontend](#-integração-com-frontend)
+- [Suporte](#-suporte)
+- [Licença](#-licença)
+
+---
+
+---
 
 ## 📋 Sobre o Projeto
 
-O Family Organizer é uma aplicação backend completa para ajudar famílias a organizarem sua rotina, permitindo gerenciar consultas médicas, eventos, anotações, locais importantes, álbuns de fotos e muito mais, tudo de forma compartilhada entre membros de um grupo familiar.
+O **Family Organizer** é uma API backend robusta e completa para gerenciamento de organização familiar. Permite que famílias organizem sua rotina de forma compartilhada, com suporte a:
 
-## 🚀 Tecnologias Utilizadas
+- 👥 **Múltiplas famílias por usuário** - Um usuário pode participar de várias famílias
+- 🔐 **Sistema de roles** - Admins e membros com permissões diferentes
+- 📸 **Upload de fotos de perfil** - Sistema completo de upload com validação
+- ⏱️ **Códigos temporários** - Convites com 15 minutos de validade
+- 📝 **Organização completa** - Consultas, eventos, notas, locais, fotos e álbuns
+- 🏷️ **Categorização avançada** - Notas com categorias e autores
+- 🔒 **Segurança** - JWT, senhas criptografadas, validações completas
 
-- **Node.js** - Runtime JavaScript
-- **Express** - Framework web
-- **Prisma** - ORM para banco de dados
+---
+
+## ✨ Características Principais
+
+### 🏠 Sistema Multi-Família
+- Um usuário pode criar múltiplas famílias (sempre como admin)
+- Um usuário pode participar de múltiplas famílias (como admin ou membro)
+- Cada família tem seus próprios dados isolados
+- Sistema de roles (admin/member) por família
+
+### 🎫 Sistema de Convites
+- **Código Permanente**: 9 caracteres, nunca expira
+- **Código Temporário**: 6 caracteres, expira em 15 minutos
+- Regeneração de códigos por admins
+
+- Upload de foto de perfil com Multer
+- Validação: JPEG, PNG, GIF (máx 5MB)
+- Armazenamento local com nome único
+- Remoção automática de foto antiga
+- Servir arquivos estaticamente
+- 6 categorias: compras, escola, trabalho, saúde, finanças, geral
+- 3 prioridades: baixa, normal, alta
+- Rastreamento de autor (quem criou)
+- Busca por texto, categoria e prioridade
+
+### 🔐 Segurança
+- Autenticação JWT com tokens
+- Senhas criptografadas com bcryptjs
+- Validação de membros em todas as rotas
+- Verificação de permissões (admin/member)
+- CORS configurado
+
+---
+
+## 🚀 Tecnologias
+
+### Core
+- **Node.js** ^18.0.0 - Runtime JavaScript
+- **Express** 5.1.0 - Framework web minimalista
+- **Prisma** 6.16.3 - ORM moderno para Node.js
 - **SQLite** - Banco de dados (desenvolvimento)
-- **JWT** - Autenticação via tokens
-- **bcryptjs** - Criptografia de senhas
-- **CORS** - Habilitação de requisições cross-origin
+
+### Autenticação e Segurança
+- **jsonwebtoken** 9.0.2 - Geração e validação de JWT
+- **bcryptjs** 3.0.2 - Criptografia de senhas
+
+### Upload e Arquivos
+- **Multer** 2.0.2 - Middleware para upload de arquivos
+
+### Utilitários
+- **cors** 2.8.5 - Habilitar CORS
+- **dotenv** 16.4.7 - Variáveis de ambiente
+- **nodemon** 3.1.9 - Auto-reload em desenvolvimento
+
+---
+
+## 🏗️ Arquitetura
+
+```
+BackEnd-family-organizer/
+│
+├── prisma/
+│   ├── schema.prisma
+│   ├── prisma.js
+│   ├── dev.db
+│   ├── migrations/
+│   └── seed/
+│       └── seed.js
+│
+├── src/
+│   ├── server.js
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── userController.js
+│   │   ├── familyGroupController.js
+│   │   ├── appointmentController.js
+│   │   ├── eventController.js
+│   │   ├── noteController.js
+│   │   ├── placeController.js
+│   │   ├── albumController.js
+│   │   ├── photoController.js
+│   │   └── dashboardController.js
+│   ├── models/
+│   │   ├── userModel.js
+│   │   ├── familyGroupModel.js
+│   │   ├── appointmentModel.js
+│   │   ├── eventModel.js
+│   │   ├── noteModel.js
+│   │   ├── placeModel.js
+│   │   ├── albumModel.js
+│   │   └── photoModel.js
+│   ├── routes/
+│   │   ├── index.routes.js
+│   │   ├── auth.routes.js
+│   │   ├── user.routes.js
+│   │   ├── familyGroup.routes.js
+│   │   ├── appointment.routes.js
+│   │   ├── event.routes.js
+│   │   ├── note.routes.js
+│   │   ├── place.routes.js
+│   │   ├── album.routes.js
+│   │   ├── photo.routes.js
+│   │   └── dashboard.routes.js
+│   ├── middleware/
+│   │   ├── authMiddleware.js
+│   │   └── uploadMiddleware.js
+│   └── uploads/
+│       └── profiles/
+│
+├── uploads/
+│   └── profiles/
+├── .env
+├── package.json
+└── README.md
+```
+
+### Padrão MVC (Model-View-Controller)
+
+- **Models**: Lógica de acesso aos dados (Prisma)
+- **Controllers**: Lógica de negócio e validações
+
+---
+
+---
 
 ## 📦 Instalação
 
-1. Clone o repositório:
+### Pré-requisitos
+
+- Node.js 18 ou superior
+- npm ou yarn
+
+### Passo a Passo
+
+1. **Clone o repositório**
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/pablodelgado26/BackEnd-family-organizer.git
 cd BackEnd-family-organizer
 ```
 
-2. Instale as dependências:
+2. **Instale as dependências**
 ```bash
 npm install
 ```
+3. **Configure as variáveis de ambiente**
 
-3. Configure as variáveis de ambiente (crie um arquivo `.env`):
+Crie um arquivo `.env` na raiz do projeto:
+
 ```env
+# Banco de Dados
 DATABASE_URL="file:./dev.db"
-JWT_SECRET="sua-chave-secreta-aqui"
+
+# JWT
+JWT_SECRET="sua-chave-secreta-super-segura-aqui"
+# Servidor
 PORT=4000
 ```
 
-4. Gere o Prisma Client:
+4. **Configure o banco de dados**
+
 ```bash
+# Gerar Prisma Client
 npx prisma generate
-```
 
-5. Execute as migrations:
-```bash
+# Executar migrations
 npx prisma migrate dev
-```
 
-6. (Opcional) Execute o seed para popular o banco de dados:
-```bash
+# (Opcional) Popular com dados de exemplo
 npm run prisma:seed
 ```
 
-7. Inicie o servidor:
+5. **Inicie o servidor**
+
 ```bash
+# Desenvolvimento (com auto-reload)
 npm run dev
+
+# Produção
+npm start
 ```
 
 O servidor estará rodando em `http://localhost:4000`
 
-## 🔐 Autenticação
+---
 
-A API utiliza **JWT (JSON Web Tokens)** para autenticação. Após o login ou registro, você receberá um token que deve ser incluído no header de todas as requisições protegidas:
+## 🛣️ Rotas da API
 
-```
-Authorization: Bearer seu-token-aqui
-```
+**Base URL**: `http://localhost:4000`
 
-## 📚 Documentação das Rotas
+**Total de Endpoints**: 73 rotas
 
-### Base URL
-```
-http://localhost:4000
-```
+### Resumo por Módulo
+
+| Módulo | Endpoints | CRUD Completo |
+|--------|-----------|---------------|
+| Autenticação | 3 | Parcial |
+| Perfil de Usuário | 2 | ✅ |
+| Grupos Familiares | 11 | ✅ |
+| Consultas Médicas | 8 | ✅ |
+| Eventos | 9 | ✅ |
+| Anotações | 10 | ✅ |
+| Locais | 8 | ✅ |
+| Álbuns | 7 | ✅ |
+| Fotos | 10 | ✅ |
+| Dashboard | 3 | ✅ |
 
 ---
 
-## 🔓 Rotas Públicas
+### 1. Autenticação (`/auth`)
 
-### Autenticação (`/auth`)
+#### 🔓 Rotas Públicas
 
-#### 1. **Listar Todos os Usuários**
-```http
+#### `GET /auth`
+Lista todos os usuários cadastrados.
+
+```javascript
 GET /auth
-```
-**Descrição:** Retorna todos os usuários cadastrados.
 
-**Resposta de Sucesso (200):**
-```json
+// Response 200
 [
   {
     "id": 1,
     "name": "João Silva",
     "email": "joao@email.com",
     "gender": "masculino",
-    "createdAt": "2025-10-01T10:00:00.000Z",
-    "updatedAt": "2025-10-01T10:00:00.000Z"
+    "photoUrl": "/uploads/profiles/1-123456789.jpg",
+    "createdAt": "2025-10-01T10:00:00.000Z"
   }
 ]
 ```
 
 ---
 
-#### 2. **Registrar Novo Usuário**
-```http
-POST /auth/register
-```
-**Descrição:** Cria uma nova conta de usuário.
+#### `POST /auth/register`
+Registra novo usuário no sistema.
 
-**Body:**
-```json
+```javascript
+POST /auth/register
+Content-Type: application/json
+
 {
   "name": "João Silva",
   "email": "joao@email.com",
   "password": "senha123",
-  "gender": "masculino"  // opcional: "masculino", "feminino" ou "outro"
+  "gender": "masculino"  // opcional: "masculino" | "feminino" | "outro"
 }
-```
 
-**Resposta de Sucesso (201):**
-```json
+// Response 201
 {
   "message": "Usuário criado com sucesso!",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -127,35 +306,37 @@ POST /auth/register
     "name": "João Silva",
     "email": "joao@email.com",
     "gender": "masculino",
-    "createdAt": "2025-10-01T10:00:00.000Z",
-    "updatedAt": "2025-10-01T10:00:00.000Z"
+    "photoUrl": null,
+    "createdAt": "2025-10-01T10:00:00.000Z"
   }
 }
 ```
 
-**Erros:**
-- `400`: Campos obrigatórios faltando ou gênero inválido
-- `400`: Email já está em uso
-- `500`: Erro interno do servidor
+**Validações**:
+- Nome, email e senha obrigatórios
+- Email deve ser único
+- Gênero: `masculino`, `feminino` ou `outro`
+
+**Erros**:
+- `400`: Campos obrigatórios faltando
+- `400`: Email já cadastrado
+- `400`: Gênero inválido
 
 ---
 
-#### 3. **Login**
-```http
-POST /auth/login
-```
-**Descrição:** Realiza login e retorna token de autenticação.
+#### `POST /auth/login`
+Realiza login e retorna token JWT.
 
-**Body:**
-```json
+```javascript
+POST /auth/login
+Content-Type: application/json
+
 {
   "email": "joao@email.com",
   "password": "senha123"
 }
-```
 
-**Resposta de Sucesso (200):**
-```json
+// Response 200
 {
   "message": "Login realizado com sucesso!",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -164,35 +345,131 @@ POST /auth/login
     "name": "João Silva",
     "email": "joao@email.com",
     "gender": "masculino",
-    "createdAt": "2025-10-01T10:00:00.000Z",
-    "updatedAt": "2025-10-01T10:00:00.000Z"
+    "photoUrl": "/uploads/profiles/1-123456789.jpg"
   }
 }
 ```
 
-**Erros:**
-- `400`: Campos obrigatórios faltando
+**Erros**:
+- `400`: Email ou senha faltando
 - `401`: Credenciais inválidas
-- `500`: Erro interno do servidor
 
 ---
 
-## 🔒 Rotas Protegidas
+### 2. Perfil de Usuário (`/users`)
 
-> **Todas as rotas abaixo requerem autenticação via token JWT no header.**
+#### 🔒 Requer Autenticação
 
----
+#### `GET /users/profile`
+Obtém perfil do usuário autenticado.
 
-## 👨‍👩‍👧 Grupos Familiares (`/family-groups`)
+```javascript
+GET /users/profile
+Authorization: Bearer TOKEN
 
-#### 1. **Listar Grupos do Usuário**
-```http
-GET /family-groups
+// Response 200
+{
+  "message": "Perfil obtido com sucesso",
+  "user": {
+    "id": 1,
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "gender": "masculino",
+    "photoUrl": "/uploads/profiles/1-1696612345678.jpg",
+    "createdAt": "2025-10-01T10:00:00.000Z",
+    "updatedAt": "2025-10-06T20:00:00.000Z"
+  }
+}
 ```
-**Descrição:** Retorna todos os grupos familiares que o usuário pertence.
 
-**Resposta de Sucesso (200):**
-```json
+---
+
+#### `PUT /users/profile`
+Atualiza perfil do usuário (incluindo foto).
+
+**⚠️ IMPORTANTE**: Esta rota usa `multipart/form-data` para upload de foto!
+
+```javascript
+PUT /users/profile
+Authorization: Bearer TOKEN
+Content-Type: multipart/form-data
+
+// FormData:
+{
+  "photo": File,                    // Arquivo de imagem (opcional)
+  "name": "João Silva Santos",     // opcional
+  "email": "joao.novo@email.com",  // opcional
+  "gender": "masculino",            // opcional
+  "currentPassword": "senha123",    // obrigatório se mudar senha
+  "newPassword": "novaSenha456"     // opcional
+}
+
+// Response 200
+{
+  "message": "Perfil atualizado com sucesso!",
+  "user": {
+    "id": 1,
+    "name": "João Silva Santos",
+    "email": "joao.novo@email.com",
+    "gender": "masculino",
+    "photoUrl": "/uploads/profiles/1-1696612456789.jpg",  // Nova foto
+    "updatedAt": "2025-10-06T20:30:00.000Z"
+  }
+}
+```
+
+**Validações da Foto**:
+- ✅ Tipos aceitos: JPEG, JPG, PNG, GIF
+- ✅ Tamanho máximo: 5MB
+- ✅ Validação de MIME type
+- ✅ Foto antiga é removida automaticamente
+
+**Validações dos Campos**:
+- Email deve ser único
+- Nome não pode estar vazio
+- Gênero: `masculino`, `feminino` ou `outro`
+- `currentPassword` obrigatória para mudar senha
+- `newPassword` mínimo 6 caracteres
+
+**Erros**:
+- `400`: Arquivo muito grande (> 5MB)
+- `400`: Tipo de arquivo inválido
+- `400`: Nome vazio
+- `400`: Email já em uso
+- `400`: Nenhum campo para atualizar
+- `401`: Senha atual incorreta
+
+**Exemplo com Fetch**:
+```javascript
+const formData = new FormData();
+formData.append('photo', fileInput.files[0]);
+formData.append('name', 'João Silva');
+formData.append('email', 'joao@email.com');
+
+fetch('http://localhost:4000/users/profile', {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${token}`
+    // NÃO adicionar Content-Type! Browser define automaticamente
+  },
+  body: formData
+});
+```
+
+---
+
+### 3. Grupos Familiares (`/family-groups`)
+
+#### 🔒 Todas as rotas requerem autenticação
+
+#### `GET /family-groups`
+Lista todas as famílias que o usuário participa.
+
+```javascript
+GET /family-groups
+Authorization: Bearer TOKEN
+
+// Response 200
 {
   "message": "Grupos familiares obtidos com sucesso",
   "familyGroups": [
@@ -200,9 +477,31 @@ GET /family-groups
       "id": 1,
       "name": "Família Silva",
       "inviteCode": "ABC123XYZ",
-      "role": "admin",
+      "role": "admin",  // Papel do usuário NESTA família
       "createdAt": "2025-10-01T10:00:00.000Z",
-      "members": [...]
+      "members": [
+        {
+          "id": 1,
+          "userId": 1,
+          "role": "admin",
+          "user": {
+            "id": 1,
+            "name": "João Silva",
+            "email": "joao@email.com",
+            "photoUrl": "/uploads/profiles/1-123.jpg"
+          }
+        },
+        {
+          "id": 2,
+          "userId": 2,
+          "role": "member",
+          "user": {
+            "id": 2,
+            "name": "Maria Silva",
+            "email": "maria@email.com"
+          }
+        }
+      ]
     }
   ]
 }
@@ -210,17 +509,14 @@ GET /family-groups
 
 ---
 
-#### 2. **Obter Detalhes de um Grupo**
-```http
-GET /family-groups/:id
-```
-**Descrição:** Retorna informações detalhadas de um grupo específico.
+#### `GET /family-groups/:id`
+Obtém detalhes de uma família específica.
 
-**Parâmetros de URL:**
-- `id` - ID do grupo familiar
+```javascript
+GET /family-groups/1
+Authorization: Bearer TOKEN
 
-**Resposta de Sucesso (200):**
-```json
+// Response 200
 {
   "message": "Grupo familiar obtido com sucesso",
   "familyGroup": {
@@ -235,67 +531,70 @@ GET /family-groups/:id
         "user": {
           "id": 1,
           "name": "João Silva",
-          "email": "joao@email.com"
-        }
+          "email": "joao@email.com",
+          "photoUrl": "/uploads/profiles/1-123.jpg",
+          "gender": "masculino"
+        },
+        "createdAt": "2025-10-01T10:00:00.000Z"
       }
     ],
-    "createdAt": "2025-10-01T10:00:00.000Z"
+    "createdAt": "2025-10-01T10:00:00.000Z",
+    "updatedAt": "2025-10-01T10:00:00.000Z"
   }
 }
 ```
 
-**Erros:**
+**Erros**:
 - `403`: Usuário não é membro do grupo
 - `404`: Grupo não encontrado
 
 ---
 
-#### 3. **Criar Novo Grupo Familiar**
-```http
-POST /family-groups
-```
-**Descrição:** Cria um novo grupo familiar. O criador se torna automaticamente admin.
+#### `POST /family-groups`
+Cria nova família (usuário vira admin automaticamente).
 
-**Body:**
-```json
+```javascript
+POST /family-groups
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
 {
   "name": "Família Silva"
 }
-```
 
-**Resposta de Sucesso (201):**
-```json
+// Response 201
 {
   "message": "Grupo familiar criado com sucesso",
   "familyGroup": {
     "id": 1,
     "name": "Família Silva",
-    "inviteCode": "ABC123XYZ",
+    "inviteCode": "ABC123XYZ",  // Código gerado automaticamente
     "createdAt": "2025-10-01T10:00:00.000Z"
   }
 }
 ```
 
-**Erros:**
-- `400`: Nome do grupo é obrigatório
+**Validações**:
+- Nome obrigatório
+
+**Erros**:
+- `400`: Nome é obrigatório
 
 ---
 
-#### 4. **Entrar em um Grupo (via código de convite)**
-```http
-POST /family-groups/join
-```
-**Descrição:** Permite entrar em um grupo familiar usando código de convite.
+#### `POST /family-groups/join`
+Entrar em família usando código permanente.
 
-**Body:**
-```json
+```javascript
+POST /family-groups/join
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
 {
   "inviteCode": "ABC123XYZ"
 }
-```
 
-**Resposta de Sucesso (201):**
-```json
+// Response 201
 {
   "message": "Você se juntou ao grupo familiar com sucesso",
   "member": {
@@ -311,131 +610,189 @@ POST /family-groups/join
 }
 ```
 
-**Erros:**
-- `400`: Código de convite obrigatório
-- `400`: Usuário já é membro do grupo
-- `404`: Código de convite inválido
+**Erros**:
+- `400`: Código obrigatório
+- `400`: Já é membro do grupo
+- `404`: Código inválido
 
 ---
 
-#### 5. **Atualizar Grupo Familiar** (apenas admin)
-```http
-PUT /family-groups/:id
-```
-**Descrição:** Atualiza informações do grupo (apenas administradores).
+#### `POST /family-groups/join-temp`
+Entrar em família usando código temporário (15 minutos).
 
-**Parâmetros de URL:**
-- `id` - ID do grupo familiar
+```javascript
+POST /family-groups/join-temp
+Authorization: Bearer TOKEN
+Content-Type: application/json
 
-**Body:**
-```json
 {
-  "name": "Novo Nome do Grupo"
+  "tempInviteCode": "A1B2C3"
 }
-```
 
-**Resposta de Sucesso (200):**
-```json
+// Response 201
 {
-  "message": "Grupo familiar atualizado com sucesso",
+  "message": "Você se juntou ao grupo familiar com sucesso",
+  "member": {
+    "id": 3,
+    "userId": 3,
+    "familyGroupId": 1,
+    "role": "member"
+  },
   "familyGroup": {
     "id": 1,
-    "name": "Novo Nome do Grupo",
-    "updatedAt": "2025-10-02T10:00:00.000Z"
+    "name": "Família Silva"
   }
 }
 ```
 
-**Erros:**
-- `403`: Apenas administradores podem atualizar
+**Erros**:
+- `400`: Código obrigatório
+- `400`: Código expirado
+- `400`: Já é membro do grupo
+- `404`: Código inválido
+
+---
+
+#### `POST /family-groups/:id/temp-invite`
+🔐 **Apenas ADMINS** - Gerar código temporário de convite (15 min).
+
+```javascript
+POST /family-groups/1/temp-invite
+Authorization: Bearer TOKEN (admin)
+
+// Response 200
+{
+  "message": "Código temporário gerado com sucesso",
+  "tempInviteCode": "A1B2C3",
+  "expiresAt": "2025-10-06T20:15:00.000Z",
+  "expiresIn": "15 minutos"
+}
+```
+
+**Características**:
+- 6 caracteres alfanuméricos
+- Expira em 15 minutos
+- Pode ser gerado múltiplas vezes (substitui anterior)
+
+**Erros**:
+- `403`: Apenas admins podem gerar
 - `404`: Grupo não encontrado
 
 ---
 
-#### 6. **Gerar Novo Código de Convite** (apenas admin)
-```http
-PUT /family-groups/:id/regenerate-invite
-```
-**Descrição:** Gera um novo código de convite para o grupo.
+#### `PUT /family-groups/:id`
+🔐 **Apenas ADMINS** - Atualizar nome da família.
 
-**Parâmetros de URL:**
-- `id` - ID do grupo familiar
+```javascript
+PUT /family-groups/1
+Authorization: Bearer TOKEN (admin)
+Content-Type: application/json
 
-**Resposta de Sucesso (200):**
-```json
 {
-  "message": "Novo código de convite gerado com sucesso",
-  "inviteCode": "XYZ789ABC"
+  "name": "Família Silva Santos"
+}
+
+// Response 200
+{
+  "message": "Grupo familiar atualizado com sucesso",
+  "familyGroup": {
+    "id": 1,
+    "name": "Família Silva Santos",
+    "updatedAt": "2025-10-06T20:30:00.000Z"
+  }
 }
 ```
 
-**Erros:**
-- `403`: Apenas administradores podem gerar novo código
+**Erros**:
+- `403`: Apenas admins podem atualizar
+- `404`: Grupo não encontrado
 
 ---
 
-#### 7. **Remover Membro do Grupo** (apenas admin)
-```http
-DELETE /family-groups/:id/members/:memberId
+#### `PUT /family-groups/:id/regenerate-invite`
+🔐 **Apenas ADMINS** - Gerar novo código permanente.
+
+```javascript
+PUT /family-groups/1/regenerate-invite
+Authorization: Bearer TOKEN (admin)
+
+// Response 200
+{
+  "message": "Novo código de convite gerado com sucesso",
+  "inviteCode": "XYZ789NEW"
+}
 ```
-**Descrição:** Remove um membro do grupo familiar.
 
-**Parâmetros de URL:**
-- `id` - ID do grupo familiar
-- `memberId` - ID do usuário a ser removido
+**⚠️ Cuidado**: Código antigo para de funcionar!
 
-**Resposta de Sucesso (200):**
-```json
+**Erros**:
+- `403`: Apenas admins podem regenerar
+
+---
+
+#### `DELETE /family-groups/:id/members/:memberId`
+🔐 **Apenas ADMINS** - Remover membro do grupo.
+
+```javascript
+DELETE /family-groups/1/members/2
+Authorization: Bearer TOKEN (admin)
+
+// Response 200
 {
   "message": "Membro removido com sucesso"
 }
 ```
 
-**Erros:**
-- `403`: Apenas administradores podem remover membros
+**Validações**:
+- Admin não pode remover a si mesmo (usar `/leave`)
+
+**Erros**:
+- `403`: Apenas admins podem remover
 - `400`: Não pode remover a si mesmo
 
 ---
 
-#### 8. **Sair do Grupo**
-```http
-DELETE /family-groups/:id/leave
-```
-**Descrição:** Permite que o usuário saia do grupo familiar.
+#### `DELETE /family-groups/:id/leave`
+Sair da família.
 
-**Parâmetros de URL:**
-- `id` - ID do grupo familiar
+```javascript
+DELETE /family-groups/1/leave
+Authorization: Bearer TOKEN
 
-**Resposta de Sucesso (200):**
-```json
+// Response 200
 {
   "message": "Você saiu do grupo familiar com sucesso"
 }
 ```
 
-**Erros:**
-- `400`: Admin deve transferir administração antes de sair (se houver outros membros)
+**Validações**:
+- Admin não pode sair se houver outros membros
+- Admin deve transferir administração ou excluir grupo
+
+**Erros**:
+- `400`: Admin deve transferir administração primeiro
 
 ---
 
-#### 9. **Excluir Grupo Familiar** (apenas admin)
-```http
-DELETE /family-groups/:id
-```
-**Descrição:** Exclui permanentemente o grupo familiar.
+#### `DELETE /family-groups/:id`
+🔐 **Apenas ADMINS** - Excluir família permanentemente.
 
-**Parâmetros de URL:**
-- `id` - ID do grupo familiar
+```javascript
+DELETE /family-groups/1
+Authorization: Bearer TOKEN (admin)
 
-**Resposta de Sucesso (200):**
-```json
+// Response 200
 {
   "message": "Grupo familiar excluído com sucesso"
 }
 ```
 
-**Erros:**
-- `403`: Apenas administradores podem excluir o grupo
+**⚠️ CUIDADO**: 
+- Todos os dados são excluídos (consultas, eventos, notas, etc)
+- Ação irreversível!
+
+**Erros**:
+- `403`: Apenas admins podem excluir
 
 ---
 
@@ -706,7 +1063,10 @@ GET /notes/group/:familyGroupId
     "title": "Lista de Compras",
     "content": "Arroz, feijão, macarrão...",
     "priority": "normal",
+    "category": "compras",
     "familyGroupId": 1,
+    "authorId": 1,
+    "author": { "id": 1, "name": "João Silva", "photoUrl": "/uploads/profiles/1-123.jpg" },
     "createdAt": "2025-10-01T10:00:00.000Z",
     "updatedAt": "2025-10-01T10:00:00.000Z"
   }
@@ -751,6 +1111,7 @@ POST /notes
   "title": "Lista de Compras",
   "content": "Arroz, feijão, macarrão, leite, pão",
   "priority": "normal",
+  "category": "compras",
   "familyGroupId": 1
 }
 ```
@@ -773,18 +1134,37 @@ DELETE /notes/:id
 
 ---
 
-#### 7. **Buscar Anotações**
+#### 7. **Filtrar por Categoria**
 ```http
-GET /notes/group/:familyGroupId/search?query=compras
+GET /notes/group/:familyGroupId/category?category=compras
+```
+**Descrição:** Lista anotações de uma categoria específica.
+
+**Query Parameters:**
+- `category` - compras | escola | trabalho | saude | financas | geral
+
+---
+
+#### 8. **Listar Categorias Usadas**
+```http
+GET /notes/group/:familyGroupId/categories
+```
+**Descrição:** Retorna a lista única de categorias utilizadas no grupo.
+
+---
+
+#### 9. **Buscar Anotações**
+```http
+GET /notes/group/:familyGroupId/search?q=compras
 ```
 **Descrição:** Busca anotações por termo no título ou conteúdo.
 
 **Query Parameters:**
-- `query` - Termo de busca
+- `q` - Termo de busca
 
 ---
 
-#### 8. **Obter Anotações de Alta Prioridade**
+#### 10. **Obter Anotações de Alta Prioridade**
 ```http
 GET /notes/group/:familyGroupId/high-priority
 ```
@@ -882,12 +1262,12 @@ DELETE /places/:id
 
 #### 7. **Buscar Locais**
 ```http
-GET /places/group/:familyGroupId/search?query=hospital
+GET /places/group/:familyGroupId/search?q=hospital
 ```
 **Descrição:** Busca locais por nome ou endereço.
 
 **Query Parameters:**
-- `query` - Termo de busca
+- `q` - Termo de busca
 
 ---
 
@@ -967,12 +1347,12 @@ DELETE /albums/:id
 
 #### 6. **Buscar Álbuns**
 ```http
-GET /albums/group/:familyGroupId/search?query=ferias
+GET /albums/group/:familyGroupId/search?q=ferias
 ```
 **Descrição:** Busca álbuns por nome.
 
 **Query Parameters:**
-- `query` - Termo de busca
+- `q` - Termo de busca
 
 ---
 
@@ -1089,12 +1469,12 @@ DELETE /photos/:id
 
 #### 9. **Buscar Fotos**
 ```http
-GET /photos/group/:familyGroupId/search?query=praia
+GET /photos/group/:familyGroupId/search?q=praia
 ```
 **Descrição:** Busca fotos por título ou descrição.
 
 **Query Parameters:**
-- `query` - Termo de busca
+- `q` - Termo de busca
 
 ---
 
@@ -1266,7 +1646,10 @@ GET /dashboard/group/:familyGroupId/stats
   title: String,
   content: String,
   priority: String, // "baixa", "normal", "alta"
+  category: String, // "compras", "escola", "trabalho", "saude", "financas", "geral"
   familyGroupId: Integer,
+  authorId: Integer | null,
+  author: { id, name, email?, photoUrl? } | null,
   createdAt: DateTime,
   updatedAt: DateTime
 }
