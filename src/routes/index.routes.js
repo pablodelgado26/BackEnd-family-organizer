@@ -2,6 +2,7 @@ import express from "express"
 
 // Importar todas as rotas
 import authRouter from "./auth.routes.js"
+import userRouter from "./user.routes.js"
 import familyGroupRouter from "./familyGroup.routes.js"
 import appointmentRouter from "./appointment.routes.js"
 import eventRouter from "./event.routes.js"
@@ -20,6 +21,9 @@ router.use("/auth", authRouter);
 
 //Rotas protegidas
 router.use(authMiddleware);
+
+// Rotas de usuário
+router.use("/users", userRouter);
 
 // Rotas do sistema de organização familiar
 router.use("/family-groups", familyGroupRouter);

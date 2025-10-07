@@ -14,15 +14,17 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   name     String
-  email    String @unique
+  email    String  @unique
   password String
   gender   String? // "masculino", "feminino", "outro"
-  
+  photoUrl String? // URL da foto do usuário
+
   // Relacionamentos
   familyGroups FamilyGroupMember[]
-  
+  notes        Note[]              @relation("NoteAuthor")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -30,19 +32,21 @@ model User {
 }
 
 model FamilyGroup {
-  id          Int    @id @default(autoincrement())
-  name        String // Ex: "Família Garcia"
-  inviteCode  String @unique
-  
+  id                Int       @id @default(autoincrement())
+  name              String // Ex: "Família Garcia"
+  inviteCode        String    @unique
+  tempInviteCode    String? // Código temporário de convite (6 caracteres)
+  tempCodeExpiresAt DateTime? // Data de expiração do código temporário
+
   // Relacionamentos
-  members       FamilyGroupMember[]
-  appointments  Appointment[]
-  events        Event[]
-  notes         Note[]
-  places        Place[]
-  photos        Photo[]
-  albums        Album[]
-  
+  members      FamilyGroupMember[]
+  appointments Appointment[]
+  events       Event[]
+  notes        Note[]
+  places       Place[]
+  photos       Photo[]
+  albums       Album[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -50,15 +54,15 @@ model FamilyGroup {
 }
 
 model FamilyGroupMember {
-  id            Int         @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   userId        Int
   familyGroupId Int
-  role          String      @default("member") // "admin", "member"
-  
+  role          String @default("member") // "admin", "member"
+
   // Relacionamentos
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   familyGroup FamilyGroup @relation(fields: [familyGroupId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -67,7 +71,7 @@ model FamilyGroupMember {
 }
 
 model Appointment {
-  id            Int         @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   title         String
   doctor        String?
   location      String
@@ -75,10 +79,10 @@ model Appointment {
   time          String
   description   String?
   familyGroupId Int
-  
+
   // Relacionamento
   familyGroup FamilyGroup @relation(fields: [familyGroupId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -86,18 +90,18 @@ model Appointment {
 }
 
 model Event {
-  id            Int         @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   title         String
   description   String?
   date          DateTime
   time          String?
   location      String?
-  type          String      // "aniversario", "reuniao", "viagem", "outro"
+  type          String // "aniversario", "reuniao", "viagem", "outro"
   familyGroupId Int
-  
+
   // Relacionamento
   familyGroup FamilyGroup @relation(fields: [familyGroupId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -105,15 +109,18 @@ model Event {
 }
 
 model Note {
-  id            Int         @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   title         String
   content       String
-  priority      String      @default("normal") // "baixa", "normal", "alta"
+  priority      String @default("normal") // "baixa", "normal", "alta"
+  category      String @default("geral") // "compras", "escola", "trabalho", "saude", "financas", "geral"
+  authorId      Int? // ID do usuário que criou a nota
   familyGroupId Int
-  
-  // Relacionamento
+
+  // Relacionamentos
   familyGroup FamilyGroup @relation(fields: [familyGroupId], references: [id], onDelete: Cascade)
-  
+  author      User?       @relation("NoteAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -121,17 +128,17 @@ model Note {
 }
 
 model Place {
-  id            Int         @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   name          String
   address       String
-  type          String      // "hospital", "escola", "mercado", "outro"
+  type          String // "hospital", "escola", "mercado", "outro"
   phone         String?
   notes         String?
   familyGroupId Int
-  
+
   // Relacionamento
   familyGroup FamilyGroup @relation(fields: [familyGroupId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -139,15 +146,15 @@ model Place {
 }
 
 model Album {
-  id            Int         @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   name          String
   description   String?
   familyGroupId Int
-  
+
   // Relacionamentos
   familyGroup FamilyGroup @relation(fields: [familyGroupId], references: [id], onDelete: Cascade)
   photos      Photo[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -155,17 +162,17 @@ model Album {
 }
 
 model Photo {
-  id            Int         @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   title         String?
   url           String
   description   String?
   familyGroupId Int
   albumId       Int?
-  
+
   // Relacionamentos
   familyGroup FamilyGroup @relation(fields: [familyGroupId], references: [id], onDelete: Cascade)
   album       Album?      @relation(fields: [albumId], references: [id], onDelete: SetNull)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

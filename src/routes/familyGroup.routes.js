@@ -15,11 +15,17 @@ familyGroupRouter.post("/", FamilyGroupController.createGroup);
 // Entrar em um grupo familiar usando código de convite
 familyGroupRouter.post("/join", FamilyGroupController.joinGroup);
 
+// Entrar em um grupo usando código temporário (15 minutos)
+familyGroupRouter.post("/join-temp", FamilyGroupController.joinGroupWithTempCode);
+
 // Atualizar grupo familiar (apenas admin)
 familyGroupRouter.put("/:id", FamilyGroupController.updateGroup);
 
-// Gerar novo código de convite (apenas admin)
+// Gerar novo código de convite permanente (apenas admin)
 familyGroupRouter.put("/:id/regenerate-invite", FamilyGroupController.regenerateInviteCode);
+
+// Gerar código temporário de convite - válido por 15 minutos (apenas admin)
+familyGroupRouter.post("/:id/temp-invite", FamilyGroupController.generateTempInviteCode);
 
 // Remover membro do grupo (apenas admin)
 familyGroupRouter.delete("/:id/members/:memberId", FamilyGroupController.removeMember);

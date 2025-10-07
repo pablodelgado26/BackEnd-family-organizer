@@ -16,6 +16,14 @@ class NoteModel {
                         id: true,
                         name: true
                     }
+                },
+                author: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        photoUrl: true
+                    }
                 }
             }
         });
@@ -48,6 +56,14 @@ class NoteModel {
                         id: true,
                         name: true
                     }
+                },
+                author: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        photoUrl: true
+                    }
                 }
             }
         });
@@ -61,6 +77,8 @@ class NoteModel {
                 title: data.title,
                 content: data.content,
                 priority: data.priority || 'normal',
+                category: data.category || 'geral',
+                authorId: data.authorId ? Number(data.authorId) : null,
                 familyGroupId: Number(data.familyGroupId)
             },
             include: {
@@ -68,6 +86,14 @@ class NoteModel {
                     select: {
                         id: true,
                         name: true
+                    }
+                },
+                author: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        photoUrl: true
                     }
                 }
             }
@@ -77,20 +103,31 @@ class NoteModel {
 
     // Atualizar anotação
     async update(id, data) {
+        const updateData = {};
+        
+        if (data.title !== undefined) updateData.title = data.title;
+        if (data.content !== undefined) updateData.content = data.content;
+        if (data.priority !== undefined) updateData.priority = data.priority;
+        if (data.category !== undefined) updateData.category = data.category;
+        
         const note = await prisma.note.update({
             where: {
                 id: Number(id)
             },
-            data: {
-                title: data.title,
-                content: data.content,
-                priority: data.priority
-            },
+            data: updateData,
             include: {
                 familyGroup: {
                     select: {
                         id: true,
                         name: true
+                    }
+                },
+                author: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        photoUrl: true
                     }
                 }
             }
@@ -144,9 +181,55 @@ class NoteModel {
             },
             orderBy: {
                 createdAt: 'desc'
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        name: true,
+                        photoUrl: true
+                    }
+                }
             }
         });
         return notes;
+    }
+
+    // Obter anotações por categoria
+    async findByCategory(familyGroupId, category) {
+        const notes = await prisma.note.findMany({
+            where: {
+                familyGroupId: Number(familyGroupId),
+                category: category
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        name: true,
+                        photoUrl: true
+                    }
+                }
+            }
+        });
+        return notes;
+    }
+
+    // Obter todas as categorias usadas em um grupo
+    async getCategories(familyGroupId) {
+        const notes = await prisma.note.findMany({
+            where: {
+                familyGroupId: Number(familyGroupId)
+            },
+            select: {
+                category: true
+            },
+            distinct: ['category']
+        });
+        return notes.map(note => note.category);
     }
 }
 

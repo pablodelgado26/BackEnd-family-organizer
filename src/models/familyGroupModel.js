@@ -279,6 +279,90 @@ class FamilyGroupModel {
         
         return inviteCode;
     }
+
+    // Gerar código temporário de convite (6 caracteres alfanuméricos)
+    generateTempInviteCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    }
+
+    // Criar código temporário para entrar no grupo (válido por 15 minutos)
+    async createTempInviteCode(familyGroupId) {
+        const tempCode = this.generateTempInviteCode();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+        
+        const familyGroup = await prisma.familyGroup.update({
+            where: {
+                id: Number(familyGroupId)
+            },
+            data: {
+                tempInviteCode: tempCode,
+                tempCodeExpiresAt: expiresAt
+            },
+            include: {
+                members: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        return {
+            ...familyGroup,
+            tempInviteCode: tempCode,
+            tempCodeExpiresAt: expiresAt
+        };
+    }
+
+    // Buscar grupo pelo código temporário
+    async findByTempInviteCode(tempCode) {
+        const familyGroup = await prisma.familyGroup.findFirst({
+            where: {
+                tempInviteCode: tempCode,
+                tempCodeExpiresAt: {
+                    gte: new Date() // Código ainda não expirou
+                }
+            },
+            include: {
+                members: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        return familyGroup;
+    }
+
+    // Limpar código temporário expirado
+    async clearExpiredTempCode(familyGroupId) {
+        await prisma.familyGroup.update({
+            where: {
+                id: Number(familyGroupId)
+            },
+            data: {
+                tempInviteCode: null,
+                tempCodeExpiresAt: null
+            }
+        });
+    }
 }
 
 export default new FamilyGroupModel();

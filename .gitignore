@@ -5,3 +5,10 @@ node_modules
 .flaskenv*
 !.env.project
 !.env.vault
+
+# Uploads (imagens de usuários)
+uploads/*
+!uploads/.gitkeep
+!uploads/profiles/
+uploads/profiles/*
+!uploads/profiles/.gitkeep

@@ -27,4 +27,10 @@ noteRouter.get("/group/:familyGroupId/search", NoteController.searchNotes);
 // Obter anotações de alta prioridade
 noteRouter.get("/group/:familyGroupId/high-priority", NoteController.getHighPriorityNotes);
 
+// Obter anotações por categoria
+noteRouter.get("/group/:familyGroupId/category", NoteController.getNotesByCategory);
+
+// Obter lista de categorias usadas
+noteRouter.get("/group/:familyGroupId/categories", NoteController.getCategories);
+
 export default noteRouter;

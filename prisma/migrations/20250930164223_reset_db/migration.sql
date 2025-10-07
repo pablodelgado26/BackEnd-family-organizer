@@ -1,22 +1,13 @@
-/*
-  Warnings:
-
-  - You are about to drop the `cards` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `collections` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- AlterTable
-ALTER TABLE "users" ADD COLUMN "gender" TEXT;
-
--- DropTable
-PRAGMA foreign_keys=off;
-DROP TABLE "cards";
-PRAGMA foreign_keys=on;
-
--- DropTable
-PRAGMA foreign_keys=off;
-DROP TABLE "collections";
-PRAGMA foreign_keys=on;
+-- CreateTable
+CREATE TABLE "users" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "gender" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
 
 -- CreateTable
 CREATE TABLE "family_groups" (
@@ -119,6 +110,9 @@ CREATE TABLE "photos" (
     CONSTRAINT "photos_familyGroupId_fkey" FOREIGN KEY ("familyGroupId") REFERENCES "family_groups" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "photos_albumId_fkey" FOREIGN KEY ("albumId") REFERENCES "albums" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "family_groups_inviteCode_key" ON "family_groups"("inviteCode");

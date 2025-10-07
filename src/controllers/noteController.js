@@ -94,7 +94,7 @@ class NoteController {
     // Criar nova anotação
     async createNote(req, res) {
         try {
-            const { title, content, priority, familyGroupId } = req.body;
+            const { title, content, priority, category, familyGroupId } = req.body;
             const userId = req.userId;
             
             // Validação básica
@@ -113,6 +113,16 @@ class NoteController {
                     });
                 }
             }
+
+            // Validar categoria se fornecida
+            if (category) {
+                const validCategories = ['compras', 'escola', 'trabalho', 'saude', 'financas', 'geral'];
+                if (!validCategories.includes(category)) {
+                    return res.status(400).json({ 
+                        error: "Categoria deve ser: compras, escola, trabalho, saude, financas ou geral" 
+                    });
+                }
+            }
             
             // Verificar se é membro do grupo
             const isMember = await FamilyGroupModel.isMember(familyGroupId, userId);
@@ -124,6 +134,8 @@ class NoteController {
                 title,
                 content,
                 priority: priority || 'normal',
+                category: category || 'geral',
+                authorId: userId, // Salvar quem criou a nota
                 familyGroupId
             };
             
@@ -143,7 +155,7 @@ class NoteController {
     async updateNote(req, res) {
         try {
             const { id } = req.params;
-            const { title, content, priority } = req.body;
+            const { title, content, priority, category } = req.body;
             const userId = req.userId;
             
             // Verificar se a anotação existe
@@ -167,11 +179,22 @@ class NoteController {
                     });
                 }
             }
+
+            // Validar categoria se fornecida
+            if (category) {
+                const validCategories = ['compras', 'escola', 'trabalho', 'saude', 'financas', 'geral'];
+                if (!validCategories.includes(category)) {
+                    return res.status(400).json({ 
+                        error: "Categoria deve ser: compras, escola, trabalho, saude, financas ou geral" 
+                    });
+                }
+            }
             
             const noteData = {
                 title,
                 content,
-                priority
+                priority,
+                category
             };
             
             const note = await NoteModel.update(id, noteData);
@@ -265,6 +288,67 @@ class NoteController {
         } catch (error) {
             console.error("Erro ao buscar anotações de alta prioridade:", error);
             res.status(500).json({ error: "Erro ao buscar anotações de alta prioridade" });
+        }
+    }
+
+    // Obter anotações por categoria
+    async getNotesByCategory(req, res) {
+        try {
+            const { familyGroupId } = req.params;
+            const { category } = req.query;
+            const userId = req.userId;
+            
+            if (!category) {
+                return res.status(400).json({ error: "Categoria é obrigatória" });
+            }
+
+            // Validar categoria
+            const validCategories = ['compras', 'escola', 'trabalho', 'saude', 'financas', 'geral'];
+            if (!validCategories.includes(category)) {
+                return res.status(400).json({ 
+                    error: "Categoria deve ser: compras, escola, trabalho, saude, financas ou geral" 
+                });
+            }
+            
+            // Verificar se é membro do grupo
+            const isMember = await FamilyGroupModel.isMember(familyGroupId, userId);
+            if (!isMember) {
+                return res.status(403).json({ error: "Você não é membro deste grupo familiar" });
+            }
+            
+            const notes = await NoteModel.findByCategory(familyGroupId, category);
+            
+            res.json({
+                message: "Anotações por categoria obtidas com sucesso",
+                notes
+            });
+        } catch (error) {
+            console.error("Erro ao buscar anotações por categoria:", error);
+            res.status(500).json({ error: "Erro ao buscar anotações por categoria" });
+        }
+    }
+
+    // Obter lista de categorias usadas no grupo
+    async getCategories(req, res) {
+        try {
+            const { familyGroupId } = req.params;
+            const userId = req.userId;
+            
+            // Verificar se é membro do grupo
+            const isMember = await FamilyGroupModel.isMember(familyGroupId, userId);
+            if (!isMember) {
+                return res.status(403).json({ error: "Você não é membro deste grupo familiar" });
+            }
+            
+            const categories = await NoteModel.getCategories(familyGroupId);
+            
+            res.json({
+                message: "Categorias obtidas com sucesso",
+                categories
+            });
+        } catch (error) {
+            console.error("Erro ao buscar categorias:", error);
+            res.status(500).json({ error: "Erro ao buscar categorias" });
         }
     }
 }

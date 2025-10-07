@@ -253,6 +253,72 @@ class FamilyGroupController {
             res.status(500).json({ error: "Erro ao excluir grupo familiar" });
         }
     }
+
+    // Gerar código temporário de convite (válido por 15 minutos)
+    async generateTempInviteCode(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.userId;
+            
+            // Verificar se o usuário é admin do grupo
+            const isAdmin = await FamilyGroupModel.isAdmin(id, userId);
+            if (!isAdmin) {
+                return res.status(403).json({ error: "Apenas administradores podem gerar código temporário" });
+            }
+            
+            const familyGroup = await FamilyGroupModel.createTempInviteCode(id);
+            
+            res.json({
+                message: "Código temporário gerado com sucesso",
+                tempInviteCode: familyGroup.tempInviteCode,
+                expiresAt: familyGroup.tempCodeExpiresAt,
+                expiresIn: "15 minutos"
+            });
+        } catch (error) {
+            console.error("Erro ao gerar código temporário:", error);
+            res.status(500).json({ error: "Erro ao gerar código temporário" });
+        }
+    }
+
+    // Entrar em grupo usando código temporário
+    async joinGroupWithTempCode(req, res) {
+        try {
+            const { tempInviteCode } = req.body;
+            const userId = req.userId;
+            
+            if (!tempInviteCode) {
+                return res.status(400).json({ error: "Código temporário é obrigatório" });
+            }
+            
+            // Buscar grupo pelo código temporário
+            const familyGroup = await FamilyGroupModel.findByTempInviteCode(tempInviteCode);
+            
+            if (!familyGroup) {
+                return res.status(404).json({ error: "Código temporário inválido ou expirado" });
+            }
+            
+            // Verificar se o usuário já é membro
+            const isMember = await FamilyGroupModel.isMember(familyGroup.id, userId);
+            if (isMember) {
+                return res.status(400).json({ error: "Você já é membro deste grupo familiar" });
+            }
+            
+            // Adicionar usuário ao grupo
+            const newMember = await FamilyGroupModel.addMember(familyGroup.id, userId);
+            
+            res.status(201).json({
+                message: "Você se juntou ao grupo familiar com sucesso",
+                member: newMember,
+                familyGroup: {
+                    id: familyGroup.id,
+                    name: familyGroup.name
+                }
+            });
+        } catch (error) {
+            console.error("Erro ao entrar no grupo com código temporário:", error);
+            res.status(500).json({ error: "Erro ao entrar no grupo familiar" });
+        }
+    }
 }
 
 export default new FamilyGroupController();
